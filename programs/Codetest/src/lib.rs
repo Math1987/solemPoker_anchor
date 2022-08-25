@@ -15,6 +15,7 @@ pub mod codetest {
     pub fn init(ctx: Context<Init>) -> Result<()> {
         let mut gamelist=&mut ctx.accounts.game_list_pda;
         gamelist.game_type_index=1;
+        ctx.accounts.data.select_id=0;
         gamelist.list=Vec::new();
         Ok(())
     }
@@ -27,10 +28,7 @@ pub mod codetest {
         gametype.entry_price=entry_price;
         gametype.max_player=max_player;
         gametype.id=gamelist.game_type_index;
-        
-
-
-
+        gametype.max_games=max_game;
         let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),&[gamelist.game_type_index]], ctx.program_id );
         let gamelisttype= GameListType{
             game_type_pda,
@@ -42,40 +40,29 @@ pub mod codetest {
 
         };
         gamelist.list.push(gamelisttype);
-        // let (game_treasury_pda, game_seed) = Pubkey::find_program_address(&[&[gamelist.game_type_index]], ctx.program_id );
         gamelist.game_type_index +=1;
-        // invoke(
-        //     &system_instruction::transfer( &ctx.accounts.authority.key, &game_treasury_pda, 890880),
-        //     &[
-        //         ctx.accounts.authority.to_account_info(),
-        //         ctx.accounts.game_treasury_pda.to_account_info(),
-        //         ctx.accounts.system_program.to_account_info()
-        //     ]
-        // )?;
-
         Ok(())
     }
 
-    pub fn add_player(ctx: Context<AddPlayer>) -> Result<()>{
-
+    pub fn add_player(ctx: Context<AddPlayer>,id:u8) -> Result<()>{
         let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
-        //gametypepda 
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
-        let gamelist = &mut ctx.accounts.game_list;
-        let entryprice =gamelist.list[0].entry_price;
-
+        let gamelist = &mut ctx.accounts.game_list_pda;
+        ctx.accounts.data.select_id=id; 
+        let entryprice =ctx.accounts.game_type_pda.entry_price;
         if ctx.accounts.player.lamports() >= entryprice {
-            let game = &mut ctx.accounts.game ;
-            if game.Player.len()==0 {
+            let game = &mut ctx.accounts.game_pda ;
+            if game.Players.len()==0 {
                 game.rm=0;
             }
             let mut full = false ;
             let mut i = 0 ;
             let mut can_add = true ;
             loop {
-                if i < game.Player.len() {
-                    if game.Player[i].to_string() == ctx.accounts.player.key.to_string() {
+                if i < game.Players.len() {
+                    if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
                         can_add = false ;
+                        break;     //recheck iteration removal
                     } 
                 }else {
                     break ;
@@ -83,11 +70,10 @@ pub mod codetest {
                 i = i + 1 ;
             }
             if can_add{
-                let mut i = 0 ;
-           
-                if i<gamelist.list[0].max_player{
-                    game.Player.push(ctx.accounts.player.key());
-
+                let mut i = game.Players.len() as u8 ;
+                if i<ctx.accounts.game_type_pda.max_player{
+                    game.Players.push(ctx.accounts.player.key());
+                    
                     invoke(
                         &system_instruction::transfer( &ctx.accounts.player.key, &global_treasury_pda, entryprice),
                         &[
@@ -97,14 +83,14 @@ pub mod codetest {
                         ]
                     )?;
                 }
-                if i >= gamelist.list[0].max_player{
+                if i >= ctx.accounts.game_type_pda.max_player{
                     full = true ;
                 }else{
                     msg!("Player {} enter in game.", ctx.accounts.player.key.to_string()); 
                 }
             if full{
 
-                let treasury_funds = ctx.accounts.treasury.lamports() ;
+                let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
                 let random = now_ts%1000 + 1  ;
                 let players_funds = 3*entryprice*9/10 ;
@@ -242,31 +228,31 @@ pub struct AddPlayer<'info>{
     pub system_program : Program<'info, System>
 }
 
-#[derive(Accounts)]
-pub struct Remove<'info>{
+// #[derive(Accounts)]
+// pub struct Remove<'info>{
 
     
 
-    #[account(mut)]
-    pub game_list : Account<'info, GameList>,
+//     #[account(mut)]
+//     pub game_list : Account<'info, GameList>,
 
-    //CHECK : can be unsafe
-    #[account(mut)]
-    pub global_treasury_pda : AccountInfo<'info>,
+//     //CHECK : can be unsafe
+//     #[account(mut)]
+//     pub global_treasury_pda : AccountInfo<'info>,
 
-    pub system_program : Program<'info, System>,
+//     pub system_program : Program<'info, System>,
   
 
-    #[account(seeds = [b"GAME_TYPE".as_ref(),&[game_list.game_type_index]],bump)]
-    pub gameType : Account<'info, GameType>,
-   #[account(mut)]
-    pub player : Signer<'info>,
+//     #[account(seeds = [b"GAME_TYPE".as_ref(),&[game_list.game_type_index]],bump)]
+//     pub gameType : Account<'info, GameType>,
+//    #[account(mut)]
+//     pub player : Signer<'info>,
   
-    #[account(mut,seeds = [b"GAME".as_ref(),&[id]],bump)]
-    // #[account(mut)]
-    pub game : Account<'info, Game>,
+//     #[account(mut,seeds = [b"GAME".as_ref(),&[id]],bump)]
+//     // #[account(mut)]
+//     pub game : Account<'info, Game>,
 
-}
+// }
 
 #[account]
 pub struct Data{
@@ -305,7 +291,7 @@ pub struct GameType{
 #[derive(Default)]
 pub struct Game{
     pub game_type:Pubkey,
-    pub Player:Vec<Pubkey>,
+    pub Players:Vec<Pubkey>,
     pub winner:Pubkey,
     pub rm:u8,
     pub status:bool,
