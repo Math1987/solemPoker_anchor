@@ -49,6 +49,7 @@ pub mod codetest {
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
         let gamelist = &mut ctx.accounts.game_list_pda;
         ctx.accounts.data.select_id=id; 
+        let game_type=&mut ctx.accounts.game_type_pda;
         let entryprice =ctx.accounts.game_type_pda.entry_price;
         if ctx.accounts.player.lamports() >= entryprice {
             let game = &mut ctx.accounts.game_pda ;
@@ -58,6 +59,8 @@ pub mod codetest {
             let mut full = false ;
             let mut i = 0 ;
             let mut can_add = true ;
+
+            // duplicate entry player check
             loop {
                 if i < game.Players.len() {
                     if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
@@ -75,13 +78,15 @@ pub mod codetest {
                     game.Players.push(ctx.accounts.player.key());
                     
                     invoke(
-                        &system_instruction::transfer( &ctx.accounts.player.key, &global_treasury_pda, entryprice),
+                        &system_instruction::transfer( &ctx.accounts.player.key, &game.key(), entryprice),
                         &[
                             ctx.accounts.player.to_account_info(),
-                            ctx.accounts.global_treasury_pda.to_account_info(),
+                            game.to_account_info(),
                             ctx.accounts.system_program.to_account_info()
                         ]
                     )?;
+                }else{
+                    full=true;
                 }
                 if i >= ctx.accounts.game_type_pda.max_player{
                     full = true ;
@@ -90,6 +95,7 @@ pub mod codetest {
                 }
             if full{
 
+                ctx.accounts.game_type_pda.last_game_index += 1;
                 let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
                 let random = now_ts%1000 + 1  ;
@@ -113,21 +119,21 @@ pub mod codetest {
 
                 let comission = entryprice*3/10 ;
 
+                // invoke_signed(
+                //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
+                //     &[
+                //         ctx.accounts.global_treasury_pda.to_account_info(),
+                //         ctx.accounts.game_pda.to_account_info(),
+                //         ctx.accounts.system_program.to_account_info()
+                //     ],
+                //     &[&["Treasury".as_ref(),
+                //         &[bump_seed],
+                //     ]],
+                // )?;
                 invoke_signed(
-                    &system_instruction::transfer(&global_treasury_pda, &game_pda, final_reward),
+                    &system_instruction::transfer( &game_pda.key(), &solem_inc_pk, comission),
                     &[
-                        ctx.accounts.global_treasury_pda.to_account_info(),
                         ctx.accounts.game_pda.to_account_info(),
-                        ctx.accounts.system_program.to_account_info()
-                    ],
-                    &[&["Treasury".as_ref(),
-                        &[bump_seed],
-                    ]],
-                )?;
-                invoke_signed(
-                    &system_instruction::transfer( &global_treasury_pda, &solem_inc_pk, comission),
-                    &[
-                        ctx.accounts.global_treasury_pda.to_account_info(),
                         ctx.accounts.solem_inc.to_account_info(),
                         ctx.accounts.system_program.to_account_info()
                     ],
@@ -136,13 +142,9 @@ pub mod codetest {
                         &[bump_seed],
                     ]],
                 )?;
-
-
             }
         }
         }
-
-
         Ok(())
     }
 
@@ -221,8 +223,7 @@ pub struct AddPlayer<'info>{
     #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     pub game_type_pda : Account<'info, GameType>,
     
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type_pda.last_game_index]],bump)]
-    // #[account(mut)]
+    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type_pda.last_game_index]],bump)]
     pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
