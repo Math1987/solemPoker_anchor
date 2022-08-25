@@ -13,7 +13,7 @@ pub mod codetest {
     use super::*;
 
     pub fn init(ctx: Context<Init>) -> Result<()> {
-        let mut gamelist=&mut ctx.accounts.game_list;
+        let mut gamelist=&mut ctx.accounts.game_list_pda;
         gamelist.game_type_index=1;
         gamelist.list=Vec::new();
         Ok(())
@@ -21,6 +21,15 @@ pub mod codetest {
     pub fn create_game_type(ctx:Context<CreateGameType>,entry_price:u64,max_game:u8,max_player:u8)->Result<()>{
         let gamelist = &mut ctx.accounts.game_list ;
         let auth=ctx.accounts.authority.key();
+        let gametype=&mut ctx.accounts.game_type_pda;
+        gametype.last_game_index=1;
+        gametype.authority=auth;
+        gametype.entry_price=entry_price;
+        gametype.max_player=max_player;
+        gametype.id=gamelist.game_type_index;
+        
+
+
 
         let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),&[gamelist.game_type_index]], ctx.program_id );
         let gamelisttype= GameListType{
@@ -33,23 +42,23 @@ pub mod codetest {
 
         };
         gamelist.list.push(gamelisttype);
-        let (game_pda, game_seed) = Pubkey::find_program_address(&[&[gamelist.game_type_index]], ctx.program_id );
+        // let (game_treasury_pda, game_seed) = Pubkey::find_program_address(&[&[gamelist.game_type_index]], ctx.program_id );
         gamelist.game_type_index +=1;
-        invoke(
-            &system_instruction::transfer( &ctx.accounts.authority.key, &game_pda, 890880),
-            &[
-                ctx.accounts.authority.to_account_info(),
-                ctx.accounts.game_pda.to_account_info(),
-                ctx.accounts.system_program.to_account_info()
-            ]
-        )?;
+        // invoke(
+        //     &system_instruction::transfer( &ctx.accounts.authority.key, &game_treasury_pda, 890880),
+        //     &[
+        //         ctx.accounts.authority.to_account_info(),
+        //         ctx.accounts.game_treasury_pda.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info()
+        //     ]
+        // )?;
 
         Ok(())
     }
 
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()>{
 
-        let (treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
+        let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
         //gametypepda 
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
         let gamelist = &mut ctx.accounts.game_list;
@@ -80,10 +89,10 @@ pub mod codetest {
                     game.Player.push(ctx.accounts.player.key());
 
                     invoke(
-                        &system_instruction::transfer( &ctx.accounts.player.key, &treasury_pda, entryprice),
+                        &system_instruction::transfer( &ctx.accounts.player.key, &global_treasury_pda, entryprice),
                         &[
                             ctx.accounts.player.to_account_info(),
-                            ctx.accounts.treasury.to_account_info(),
+                            ctx.accounts.global_treasury_pda.to_account_info(),
                             ctx.accounts.system_program.to_account_info()
                         ]
                     )?;
@@ -119,9 +128,9 @@ pub mod codetest {
                 let comission = entryprice*3/10 ;
 
                 invoke_signed(
-                    &system_instruction::transfer(&treasury_pda, &game_pda, final_reward),
+                    &system_instruction::transfer(&global_treasury_pda, &game_pda, final_reward),
                     &[
-                        ctx.accounts.treasury.to_account_info(),
+                        ctx.accounts.global_treasury_pda.to_account_info(),
                         ctx.accounts.game_pda.to_account_info(),
                         ctx.accounts.system_program.to_account_info()
                     ],
@@ -130,9 +139,9 @@ pub mod codetest {
                     ]],
                 )?;
                 invoke_signed(
-                    &system_instruction::transfer( &treasury_pda, &solem_inc_pk, comission),
+                    &system_instruction::transfer( &global_treasury_pda, &solem_inc_pk, comission),
                     &[
-                        ctx.accounts.treasury.to_account_info(),
+                        ctx.accounts.global_treasury_pda.to_account_info(),
                         ctx.accounts.solem_inc.to_account_info(),
                         ctx.accounts.system_program.to_account_info()
                     ],
@@ -153,44 +162,46 @@ pub mod codetest {
 
 }
 
-pub fn remove_player(ctx : Context<Remove>) -> Result<()> {
-    let refund = ctx.accounts.game_list.list[0].entry_price;
-        let (treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
-        let game = &mut ctx.accounts.game ;
-        let player = ctx.accounts.player.key.to_string() ;
-        let mut i1 = 0 ;
-        let mut playersInGame = game.Player.len() ;
-        // if playersInGame < game.Player.ma     {
+// pub fn remove_player(ctx : Context<Remove>) -> Result<()> {
+//     let refund = ctx.accounts.game_list.list[0].entry_price;
+//         let (treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
+//         let game = &mut ctx.accounts.game ;
+//         let player = ctx.accounts.player.key.to_string() ;
+//         let mut i1 = 0 ;
+//         let mut playersInGame = game.Player.len() ;
+//         // if playersInGame < game.Player.ma     {
 
-        // }
+//         // }
 
    
-    Ok(())
+//     Ok(())
 
-}
+// }
 #[derive(Accounts)]
 pub struct Init<'info> {
     #[account(mut)]
     pub server: Signer<'info>,
-    #[account(init,payer = server,space = 8 + 32*100)]
-    pub game_list : Account<'info, GameList>,
+    #[account(init,payer = server,space = 10000,seeds = [b"GAME_LIST".as_ref()],bump)]
+    pub game_list_pda : Account<'info, GameList>,
+    #[account(init, payer = server, space = 9000)]
+    pub data : Account<'info,Data>,
     pub system_program : Program<'info, System>
 
 }
 #[derive(Accounts)]
 pub struct CreateGameType<'info>{
-    #[account(mut)]
+    #[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
     pub game_list : Account<'info, GameList>,
     
-    #[account(mut)]
-    /// CHECK:
-    pub game_pda : AccountInfo<'info>,
+    // #[account(mut)]
+    // /// CHECK:
+    // pub game_treasury_pda : AccountInfo<'info>,
 
     #[account(mut)]
     pub authority : Signer<'info>,
 
     #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list.game_type_index]],bump)]
-    pub gameType : Account<'info, GameType>,
+    pub game_type_pda : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
 }
@@ -201,29 +212,32 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub player:Signer<'info>,
 
-    //#[account(mut)]
-    //pub game_list : Account<'info, GameList>,
+    #[account(mut)]
+    pub data:Account<'info,Data>,
+
+    #[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    pub game_list_pda : Account<'info, GameList>,
 
     /// CHECK:
     #[account(mut)]
-    pub treasury : AccountInfo<'info>,
+    pub global_treasury_pda : AccountInfo<'info>,
     /// CHECK:
     #[account(mut)]
     pub solem_inc : AccountInfo<'info>,
 
     /// CHECK:
     #[account(mut)]
-    pub game_pda : AccountInfo<'info>,
+    pub game_treasury_pda : AccountInfo<'info>,
 
     #[account(mut)]
     pub authority : Signer<'info>,
     
-    #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[game_list.game_type_index]],bump)]
-    pub gameType : Account<'info, GameType>,
+    #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
+    pub game_type_pda : Account<'info, GameType>,
     
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_list.list[0].id]],bump)]
+    #[account(init,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type_pda.last_game_index]],bump)]
     // #[account(mut)]
-    pub game : Account<'info, Game>,
+    pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
 }
@@ -231,13 +245,14 @@ pub struct AddPlayer<'info>{
 #[derive(Accounts)]
 pub struct Remove<'info>{
 
+    
 
     #[account(mut)]
     pub game_list : Account<'info, GameList>,
 
     //CHECK : can be unsafe
     #[account(mut)]
-    pub treasury : AccountInfo<'info>,
+    pub global_treasury_pda : AccountInfo<'info>,
 
     pub system_program : Program<'info, System>,
   
@@ -247,14 +262,19 @@ pub struct Remove<'info>{
    #[account(mut)]
     pub player : Signer<'info>,
   
-    #[account(mut,seeds = [b"GAME".as_ref(),&[game_list.list[0].id]],bump)]
+    #[account(mut,seeds = [b"GAME".as_ref(),&[id]],bump)]
     // #[account(mut)]
     pub game : Account<'info, Game>,
 
 }
 
+#[account]
+pub struct Data{
+    pub select_id:u8,
+}
 
 #[account]
+#[derive(Default)]
 pub struct GameList{
     pub list:Vec<GameListType>,
     pub game_type_index: u8,
@@ -279,7 +299,6 @@ pub struct GameType{
     pub max_player:u8,
     pub max_games:u8,
     pub last_game_index:u8,
-    pub running_index:u8,
 }
 
 #[account]
