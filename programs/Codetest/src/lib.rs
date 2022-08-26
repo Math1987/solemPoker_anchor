@@ -58,10 +58,9 @@ pub mod codetest {
         let gametype=&mut ctx.accounts.game_type;
         //ctx.accounts.data.select_id=id; 
         msg!(" L======>60");
-
-        //ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
-        let game_type=&mut ctx.accounts.game_type;
-        let entryprice =game_type.entry_price;
+        // ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
+        // let game_type=&mut ctx.accounts.game_type;
+        let entryprice =gametype.entry_price;
         msg!(" L======>65");
         if ctx.accounts.player.lamports() >= entryprice {
         msg!(" L======>67");
@@ -94,9 +93,11 @@ pub mod codetest {
             if can_add{
                 msg!(" L======>88"); 
                 let mut i = game.Players.len() as u8 ;
-                if i<game_type.max_player{
+
+                if i<gametype.max_player{
                 msg!(" L======>91"); 
                     game.Players.push(ctx.accounts.player.key());
+
                     invoke(
                         &system_instruction::transfer( &ctx.accounts.player.key, &game.key(), entryprice),
                         &[
@@ -109,7 +110,7 @@ pub mod codetest {
                 // else{
                 //     full=true;
                 // }
-                if i >= game_type.max_player{
+                if i >= gametype.max_player{
                 msg!(" L======>106"); 
                     full = true ;
                 }else{
@@ -121,14 +122,14 @@ pub mod codetest {
 
                 msg!("You are inside Full"); 
 
-                game_type.last_game_index += 1;
-                game_type.last_game_index_to_string=game_type.last_game_index.to_string();
+                gametype.last_game_index += 1;
+                gametype.last_game_index_to_string=gametype.last_game_index.to_string();
                 let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
                 let random = now_ts%1000 + 1  ;
                 let players_funds = 3*entryprice*9/10 ;
                 let players_funds = 3*entryprice*9/10 ;
-
+                msg!(" L======>133"); 
                 if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds*50 {
                     game.rm = 50 ;
                 } else if random > 690 + 210 + 70 && treasury_funds >= players_funds*10 {
@@ -140,9 +141,9 @@ pub mod codetest {
                 }else{
                     game.rm = 2 ;
                 }
-
+                msg!(" L======>145"); 
                 let final_reward = entryprice*(game.rm as u64) ;
-                let (game_pda, game_seed) = Pubkey::find_program_address(&[b"GAME".as_ref(),game_type.key().as_ref()], ctx.program_id );
+                let (game_pda, game_seed) = Pubkey::find_program_address(&[b"GAME".as_ref(),gametype.last_game_index_to_string.as_ref()], ctx.program_id );
 
                 let comission = entryprice*3/10 ;
 
@@ -157,6 +158,7 @@ pub mod codetest {
                 //         &[bump_seed],
                 //     ]],
                 // )?;
+                msg!(" L======>162"); 
                 invoke_signed(
                     &system_instruction::transfer( &game_pda.key(), &solem_inc_pk, comission),
                     &[
@@ -165,9 +167,12 @@ pub mod codetest {
                         ctx.accounts.system_program.to_account_info()
                     ],
                     &[&[
-                        "Treasury".as_ref(),
+                        "GAME".as_ref(),
+                        gametype.last_game_index_to_string.as_ref()
+                        ,&[game_seed]
                     ]],
                 )?;
+                msg!(" L======>174"); 
             }
         }
         }
