@@ -71,6 +71,10 @@ async function main() {
   console.log("🚀 ~ file: client_invoker.mjs ~ line 68 ~ main ~ last_game_type_index", last_game_type_index);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 68 ~ main ~ typeof(last_game_type_index)", typeof (last_game_type_index));
 
+  let string_last_game_type_index = last_game_type_index.toString()
+  console.log("🚀 ~ file: utility_pda_checker.mjs ~ line 74 ~ main ~ string_last_game_type_index", string_last_game_type_index);
+  console.log("🚀 ~ file: utility_pda_checker.mjs ~ line 74 ~ main ~ typeof(string_last_game_type_index)", typeof(string_last_game_type_index));
+
   // Fetching data inside the data account => pub struct Data == CodetestProgram.account.data
   let data_accountResult = await CodetestProgram.account.data.fetch(data_account.publicKey);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 73 ~ main ~ data_accountResult", data_accountResult);
@@ -80,31 +84,57 @@ async function main() {
   let [gameTypePda] = await anchor.web3.PublicKey.findProgramAddress(
     [
       Buffer.from("GAME_TYPE"),
-      new Uint8Array(last_game_type_index) // // numeric check
-      // Buffer.from(last_game_type_index.toString()) // // hardcoded is working
+      // Buffer.from("1")
+      // new Uint8Array(last_game_type_index) // // hardcoded is working
+      Buffer.from(last_game_type_index.toString()) // // hardcoded is working
     ],
     CodetestProgram.programId
   );
   console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameListPda", gameListPda.toBase58());
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameTypePda", gameTypePda.toBase58());
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameTypePda with Buffer.from(last_game_type_index.toString()): ", gameTypePda.toBase58());
+
+  // derive a last_game_type_index specific gameTypePda account
+  [gameTypePda] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GAME_TYPE"),
+      // Buffer.from("1")
+      new Uint8Array(last_game_type_index) 
+      // Buffer.from(last_game_type_index) // // hardcoded is working
+    ],
+    CodetestProgram.programId
+  );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameTypePda with new Uint8Array(last_game_type_index): ", gameTypePda.toBase58());
+
+   // derive a last_game_type_index specific gameTypePda account
+   [gameTypePda] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GAME_TYPE"),
+      // Buffer.from("1")
+      // new Uint8Array(last_game_type_index) // // hardcoded is working
+      Buffer.from(string_last_game_type_index) // // hardcoded is working
+    ],
+    CodetestProgram.programId
+  );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameTypePda with Buffer.from(string_last_game_type_index): ", gameTypePda.toBase58());
 
 
-  // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
-  transaction_id = await CodetestProgram.methods
-    .createGameType(new BN(1 * LAMPORTS_PER_SOL), 3, 6)
-    .accounts({
-      gameListPda: gameListPda,
-      authority: provider.wallet.publicKey,
-      gameTypePda: gameTypePda,
-      systemProgram: SystemProgram.programId
-    })
-    // .signers([])
-    .rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 102 ~ main ~ createGameType transaction_id", transaction_id);
 
-  // Fetching Data from gameTypePda account => pub struct GameList == CodetestProgram.account.gameList
-  let gameTypePdaResult = await CodetestProgram.account.gameType.fetch(gameTypePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypePdaResult", gameTypePdaResult);
+  // // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
+  // transaction_id = await CodetestProgram.methods
+  //   .createGameType(new BN(1 * LAMPORTS_PER_SOL), 3, 6)
+  //   .accounts({
+  //     gameListPda: gameListPda,
+  //     authority: provider.wallet.publicKey,
+  //     gameTypePda: gameTypePda,
+  //     systemProgram: SystemProgram.programId
+  //   })
+  //   // .signers([])
+  //   .rpc();
+  // console.log("🚀 ~ file: client_invoker.mjs ~ line 102 ~ main ~ createGameType transaction_id", transaction_id);
+
+  // // Fetching Data from gameTypePda account => pub struct GameList == CodetestProgram.account.gameList
+  // let gameTypePdaResult = await CodetestProgram.account.gameType.fetch(gameTypePda);
+  // console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypePdaResult", gameTypePdaResult);
 
 // gameListPda EJrpvgQEh7cVQ58H9WvXu3fmRw2TY3WG7Nj7XJtjPtsD
 // gameTypePda DZmAu2u9LtoXfUrhro3s4aTYpFsLPzjAJMEeDFMSaHMZ

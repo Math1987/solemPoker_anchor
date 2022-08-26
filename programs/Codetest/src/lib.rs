@@ -189,8 +189,8 @@ pub struct CreateGameType<'info>{
     #[account(mut)]
     pub authority : Signer<'info>,
 
-    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)]
+    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
+    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
     pub game_type_pda : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
