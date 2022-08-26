@@ -13,6 +13,7 @@ describe("Codetest", async () => {
 
   const program = anchor.workspace.Codetest as Program<Codetest>;
   let gameList = anchor.web3.Keypair.generate() ;
+  let gameType=anchor.web3.Keypair.generate();
   // let data = anchor.web3.Keypair.generate();
   // let x;
   // let [gameListPda] = await anchor.web3.PublicKey.findProgramAddress(
@@ -28,7 +29,7 @@ describe("Codetest", async () => {
       systemProgram: SystemProgram.programId
 
     }).signers([gameList]).rpc();
-    // console.log("Your transaction signature", tx);
+    console.log("Your transaction signature", tx);
     // const gameResult = await program.account.gameList.fetch(gameListPda);
     // // console.log("🚀 ~ file: Codetest.ts ~ line 33 ~ it ~ gameResult", gameResult.gameTypeIndex.valueOf())
     // x = gameResult.gameTypeIndex.toString();
@@ -39,43 +40,43 @@ describe("Codetest", async () => {
 
   });
 
-  // it("it will Create a Game Type !", async () => {
+  it("it will Create a Game Type !", async () => {
 
-  //   console.log("inside create")
-  //   let [gametype] = await anchor.web3.PublicKey.findProgramAddress(
-  //     // [(Buffer.from("GAME_TYPE"),Buffer.from(x))], 
-  //     [
-  //       Buffer.from("GAME_TYPE"),
-  //       new Uint8Array(x)
-  //     ],
+    console.log("inside create")
+    // let [gametype] = await anchor.web3.PublicKey.findProgramAddress(
+    //   // [(Buffer.from("GAME_TYPE"),Buffer.from(x))], 
+    //   [
+    //     Buffer.from("GAME_TYPE"),
+    //     new Uint8Array(x)
+    //   ],
 
-  //     program.programId
-  //   );
-  //   console.log("🚀 ~ file: Codetest.ts ~ line 40 ~ it ~ gametype", gametype.toBase58())
-  //   let [gamelist] = await anchor.web3.PublicKey.findProgramAddress(
-  //     [Buffer.from("GAME_LIST")],
-  //     program.programId
-  //   );
-  //   console.log("🚀 ~ file: Codetest.ts ~ line 45 ~ it ~ gamelist", gamelist.toBase58())
+    //   program.programId
+    // );
+    // console.log("🚀 ~ file: Codetest.ts ~ line 40 ~ it ~ gametype", gametype.toBase58())
+    // let [gamelist] = await anchor.web3.PublicKey.findProgramAddress(
+    //   [Buffer.from("GAME_LIST")],
+    //   program.programId
+    // );
+    // console.log("🚀 ~ file: Codetest.ts ~ line 45 ~ it ~ gamelist", gamelist.toBase58())
 
-  //   try {
-  //     await program.methods.createGameType(new anchor.BN(1 * LAMPORTS_PER_SOL), 3, 6).accounts({
-  //       gameListPda: gamelist,
-  //       authority: provider.wallet.publicKey,
-  //       gameTypePda: gametype,
-  //       systemProgram: SystemProgram.programId,
+    try {
+      await program.methods.createGameType(new anchor.BN(1 * LAMPORTS_PER_SOL), 3, 6).accounts({
+        gameList: gameList.publicKey,
+        authority: provider.wallet.publicKey,
+        gameType:gameType.publicKey,
+        systemProgram: SystemProgram.programId,
 
-  //     }).signers([]).rpc();
-  //   }
-  //   catch (error) {
-  //     console.log(error);
-  //   }
-  //   const gameResult = await program.account.gameList.fetch(gameListPda);
-  //   console.log("🚀 ~ file: Codetest.ts ~ line 64 ~ it ~ gameResult", gameResult)
-  //   const gameResult2 = await program.account.gameList.fetch(gametype);
-  //   console.log("🚀 ~ file: Codetest.ts ~ line 66 ~ it ~ gameResult2", gameResult2)
+      }).signers([gameType]).rpc();
+    }
+    // catch (error) {
+    //   console.log(error);
+    // }
+    // const gameResult = await program.account.gameList.fetch(gameListPda);
+    // console.log("🚀 ~ file: Codetest.ts ~ line 64 ~ it ~ gameResult", gameResult)
+    // const gameResult2 = await program.account.gameList.fetch(gametype);
+    // console.log("🚀 ~ file: Codetest.ts ~ line 66 ~ it ~ gameResult2", gameResult2)
 
-  //   // console.log("Your transaction signature", tx);
-  // });
+    // console.log("Your transaction signature", tx);
+  });
 
 });

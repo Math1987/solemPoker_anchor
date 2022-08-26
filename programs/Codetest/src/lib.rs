@@ -188,11 +188,12 @@ pub struct Init<'info> {
 #[derive(Accounts)]
 pub struct CreateGameType<'info>{
     //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    #[account(mut)]
     pub game_list : Account<'info, GameList>,
     
-    #[account(mut)]
-    /// CHECK:
-    pub game_treasury_pda : AccountInfo<'info>,
+    // #[account(mut)]
+    // /// CHECK:
+    // pub game_treasury_pda : AccountInfo<'info>,
 
     #[account(mut)]
     pub authority : Signer<'info>,
