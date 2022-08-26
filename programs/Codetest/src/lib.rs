@@ -13,27 +13,27 @@ pub mod codetest {
     use super::*;
 
     pub fn init(ctx: Context<Init>) -> Result<()> {
-        let mut gamelist=&mut ctx.accounts.game_list_pda;
+        let mut gamelist=&mut ctx.accounts.game_list;
         gamelist.game_type_index=1;
-        gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
-        ctx.accounts.data.select_id=0;
-        ctx.accounts.data.select_id_string=ctx.accounts.data.select_id.to_string();
+        //gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
+        //ctx.accounts.data.select_id=0;
+        //ctx.accounts.data.select_id_string=ctx.accounts.data.select_id.to_string();
         gamelist.list=Vec::new();
         Ok(())
     }
     pub fn create_game_type(ctx:Context<CreateGameType>,entry_price:u64,max_game:u8,max_player:u8)->Result<()>{
-        let gamelist = &mut ctx.accounts.game_list_pda ;
+        let gamelist = &mut ctx.accounts.game_list ;
         let auth=ctx.accounts.authority.key();
-        let gametype=&mut ctx.accounts.game_type_pda;
+        let gametype=&mut ctx.accounts.game_type;
         gametype.last_game_index=1;
         gametype.authority=auth;
         gametype.entry_price=entry_price;
         gametype.max_player=max_player;
         gametype.id=gamelist.game_type_index;
         gametype.max_games=max_game;
-        let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),gamelist.game_type_index.to_string().as_bytes()], ctx.program_id );
+        //let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),gamelist.game_type_index.to_string().as_bytes()], ctx.program_id );
         let gamelisttype= GameListType{
-            game_type_pda,
+            game_type_key:gametype.key(),
             id: gamelist.game_type_index,
             entry_price,
             max_game,
@@ -43,18 +43,18 @@ pub mod codetest {
         };
         gamelist.list.push(gamelisttype);
         gamelist.game_type_index +=1;
-        gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
+        //gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
         Ok(())
     }
 
     pub fn add_player(ctx: Context<AddPlayer>,id:u8) -> Result<()>{
-        let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
+        //let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
-        let gamelist = &mut ctx.accounts.game_list_pda;
-        ctx.accounts.data.select_id=id; 
-        ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
-        let game_type=&mut ctx.accounts.game_type_pda;
-        let entryprice =ctx.accounts.game_type_pda.entry_price;
+        let gamelist = &mut ctx.accounts.game_list;
+        //ctx.accounts.data.select_id=id; 
+        //ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
+        let game_type=&mut ctx.accounts.game_type;
+        let entryprice =ctx.accounts.game_type.entry_price;
         if ctx.accounts.player.lamports() >= entryprice {
             let game = &mut ctx.accounts.game_pda ;
             if game.Players.len()==0 {
@@ -78,7 +78,7 @@ pub mod codetest {
             }
             if can_add{
                 let mut i = game.Players.len() as u8 ;
-                if i<ctx.accounts.game_type_pda.max_player{
+                if i<ctx.accounts.game_type.max_player{
                     game.Players.push(ctx.accounts.player.key());
                     
                     invoke(
@@ -92,14 +92,14 @@ pub mod codetest {
                 }else{
                     full=true;
                 }
-                if i >= ctx.accounts.game_type_pda.max_player{
+                if i >= ctx.accounts.game_type.max_player{
                     full = true ;
                 }else{
                     msg!("Player {} enter in game.", ctx.accounts.player.key.to_string()); 
                 }
             if full{
 
-                ctx.accounts.game_type_pda.last_game_index += 1;
+                ctx.accounts.game_type.last_game_index += 1;
 
                 let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
@@ -144,7 +144,7 @@ pub mod codetest {
                     ],
                     &[&[
                         "Treasury".as_ref(),
-                        &[bump_seed],
+                        //&[bump_seed],
                     ]],
                 )?;
             }
@@ -174,33 +174,40 @@ pub mod codetest {
 pub struct Init<'info> {
     #[account(mut)]
     pub server: Signer<'info>,
-    #[account(init,payer = server,space = 10000,seeds = [b"GAME_LIST".as_ref()],bump)]
-    pub game_list_pda : Account<'info, GameList>,
-    #[account(init, payer = server, space = 9000)]
-    pub data : Account<'info,Data>,
+    //#[account(init,payer = server,space = 10000,seeds = [b"GAME_LIST".as_ref()],bump)]
+    
+    #[account(init, payer = server, space = 10000)]
+    pub game_list : Account<'info, GameList>,
+ 
+    // #[account(init, payer = server, space = 9000)]
+    // pub data : Account<'info,Data>,
 
     pub system_program : Program<'info, System>
 
 }
 #[derive(Accounts)]
 pub struct CreateGameType<'info>{
-    #[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    pub game_list_pda : Account<'info, GameList>,
+    //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    pub game_list : Account<'info, GameList>,
     
-    // #[account(mut)]
-    // /// CHECK:
-    // pub game_treasury_pda : AccountInfo<'info>,
+    #[account(mut)]
+    /// CHECK:
+    pub game_treasury_pda : AccountInfo<'info>,
 
     #[account(mut)]
     pub authority : Signer<'info>,
 
     // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
     // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // hardcoded is working
-    pub game_type_pda : Account<'info, GameType>,
+    //#[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // hardcoded is working
+    #[account(init,payer = authority, space = 9000)]
+    pub game_type : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
 }
+
+
+
 
 #[derive(Accounts)]
 pub struct AddPlayer<'info>{
@@ -208,30 +215,32 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub player:Signer<'info>,
 
-    #[account(mut)]
-    pub data:Account<'info,Data>,
+    // #[account(mut)]
+    // pub data:Account<'info,Data>,
 
-    #[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    pub game_list_pda : Account<'info, GameList>,
+    //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    pub game_list : Account<'info, GameList>,
 
     /// CHECK:
-    #[account(mut)]
-    pub global_treasury_pda : AccountInfo<'info>,
+    // #[account(mut)]
+    // pub global_treasury_pda : AccountInfo<'info>,
     /// CHECK:
+    
     #[account(mut)]
     pub solem_inc : AccountInfo<'info>,
 
-    /// CHECK:
+    // CHECK:
     #[account(mut)]
     pub game_treasury_pda : AccountInfo<'info>,
 
     #[account(mut)]
     pub authority : Signer<'info>,
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
-    #[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
-    pub game_type_pda : Account<'info, GameType>,
+    //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
+    #[account(mut)]
+    pub game_type : Account<'info, GameType>,
     
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type_pda.last_game_index]],bump)]
+    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type.last_game_index]],bump)]
     pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
@@ -263,23 +272,23 @@ pub struct AddPlayer<'info>{
 
 // }
 
-#[account]
-pub struct Data{
-    pub select_id:u8,
-    pub select_id_string :String,
-}
+// #[account]
+// pub struct Data{
+//     pub select_id:u8,
+//     pub select_id_string :String,
+// }
 
 #[account]
 #[derive(Default)]
 pub struct GameList{
     pub list:Vec<GameListType>,
     pub game_type_index: u8,
-    pub game_type_index_to_string: String,
+    //pub game_type_index_to_string: String,
 
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct GameListType {
-    pub game_type_pda : Pubkey,
+    pub game_type_key : Pubkey,
     pub authority:Pubkey,
     pub id: u8,
     pub entry_price: u64,
