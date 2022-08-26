@@ -17,6 +17,7 @@ pub mod codetest {
         gamelist.game_type_index=1;
         gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
         ctx.accounts.data.select_id=0;
+        ctx.accounts.data.select_id_string=ctx.accounts.data.select_id.to_string();
         gamelist.list=Vec::new();
         Ok(())
     }
@@ -51,6 +52,7 @@ pub mod codetest {
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
         let gamelist = &mut ctx.accounts.game_list_pda;
         ctx.accounts.data.select_id=id; 
+        ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
         let game_type=&mut ctx.accounts.game_type_pda;
         let entryprice =ctx.accounts.game_type_pda.entry_price;
         if ctx.accounts.player.lamports() >= entryprice {
@@ -225,8 +227,8 @@ pub struct AddPlayer<'info>{
 
     #[account(mut)]
     pub authority : Signer<'info>,
-    
-    #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
+    // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
+    #[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
     pub game_type_pda : Account<'info, GameType>,
     
     #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type_pda.last_game_index]],bump)]
@@ -264,6 +266,7 @@ pub struct AddPlayer<'info>{
 #[account]
 pub struct Data{
     pub select_id:u8,
+    pub select_id_string :String,
 }
 
 #[account]
