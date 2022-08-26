@@ -80,8 +80,8 @@ async function main() {
   let [gameTypePda] = await anchor.web3.PublicKey.findProgramAddress(
     [
       Buffer.from("GAME_TYPE"),
-      new Uint8Array(last_game_type_index) // // numeric check
-      // Buffer.from(last_game_type_index.toString()) // // hardcoded is working
+      // new Uint8Array(last_game_type_index) // // numeric type check - It's not working here
+      Buffer.from(last_game_type_index.toString()) // // hardcoded is working
     ],
     CodetestProgram.programId
   );
@@ -107,7 +107,7 @@ async function main() {
   console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypePdaResult", gameTypePdaResult);
 
 // gameListPda EJrpvgQEh7cVQ58H9WvXu3fmRw2TY3WG7Nj7XJtjPtsD
-// gameTypePda DZmAu2u9LtoXfUrhro3s4aTYpFsLPzjAJMEeDFMSaHMZ
+// gameTypePda with numeric type DZmAu2u9LtoXfUrhro3s4aTYpFsLPzjAJMEeDFMSaHMZ
 // with "1" as hard coded string gameTypePda: 2K5s7K1Go45ThtQkRjXPeWnKTNVXyP5r5GSdrc6PRLAn
 // authority GruSFAjP7gtmJ9k3SBAiCrMXyUByGJKR885MhKWM9KJD
 
