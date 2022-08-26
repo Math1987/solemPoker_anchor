@@ -15,6 +15,7 @@ pub mod codetest {
     pub fn init(ctx: Context<Init>) -> Result<()> {
         let mut gamelist=&mut ctx.accounts.game_list_pda;
         gamelist.game_type_index=1;
+        gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
         ctx.accounts.data.select_id=0;
         gamelist.list=Vec::new();
         Ok(())
@@ -41,6 +42,7 @@ pub mod codetest {
         };
         gamelist.list.push(gamelisttype);
         gamelist.game_type_index +=1;
+        gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
         Ok(())
     }
 
@@ -96,6 +98,7 @@ pub mod codetest {
             if full{
 
                 ctx.accounts.game_type_pda.last_game_index += 1;
+
                 let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
                 let random = now_ts%1000 + 1  ;
@@ -190,7 +193,8 @@ pub struct CreateGameType<'info>{
     pub authority : Signer<'info>,
 
     // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
+    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
+    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // hardcoded is working
     pub game_type_pda : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
@@ -267,6 +271,7 @@ pub struct Data{
 pub struct GameList{
     pub list:Vec<GameListType>,
     pub game_type_index: u8,
+    pub game_type_index_to_string: String,
 
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
