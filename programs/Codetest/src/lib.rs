@@ -242,7 +242,7 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub game_type : Account<'info, GameType>,
     
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type.key()]],bump)]
+    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),game_type.key().as_ref()],bump)]
     pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
