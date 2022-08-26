@@ -5,7 +5,7 @@ use anchor_lang::{
 use std::str::FromStr;
 
 
-declare_id!("6r5XBwuuinUGyTBJJ5CB4k4o9isBzyqjG18LUEnUfFNi");
+declare_id!("AxmxjMWgQcMQRCbT6oF4PMhJfNGY9YnWNZcm4TowE3H9");
 
 
 #[program]
@@ -189,7 +189,8 @@ pub struct CreateGameType<'info>{
     #[account(mut)]
     pub authority : Signer<'info>,
 
-    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
+    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
+    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)]
     pub game_type_pda : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
