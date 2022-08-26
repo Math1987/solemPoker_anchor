@@ -81,7 +81,7 @@ describe("Codetest", async () => {
 
   it("Is initialized!", async () => {
     // Add your test here.
-    const tx = await program.methods.addPlayer()).accounts({
+    const tx = await program.methods.addPlayer().accounts({
       server: provider.wallet.publicKey,
       gameList:gameList.publicKey,
       systemProgram: SystemProgram.programId
