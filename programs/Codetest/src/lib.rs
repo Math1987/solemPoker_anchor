@@ -20,7 +20,7 @@ pub mod codetest {
         Ok(())
     }
     pub fn create_game_type(ctx:Context<CreateGameType>,entry_price:u64,max_game:u8,max_player:u8)->Result<()>{
-        let gamelist = &mut ctx.accounts.game_list ;
+        let gamelist = &mut ctx.accounts.game_list_pda ;
         let auth=ctx.accounts.authority.key();
         let gametype=&mut ctx.accounts.game_type_pda;
         gametype.last_game_index=1;
@@ -29,7 +29,7 @@ pub mod codetest {
         gametype.max_player=max_player;
         gametype.id=gamelist.game_type_index;
         gametype.max_games=max_game;
-        let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),&[gamelist.game_type_index]], ctx.program_id );
+        let (game_type_pda, game_seed) = Pubkey::find_program_address(&[b"GAME_TYPE".as_ref(),gamelist.game_type_index.to_string().as_bytes()], ctx.program_id );
         let gamelisttype= GameListType{
             game_type_pda,
             id: gamelist.game_type_index,
@@ -173,13 +173,14 @@ pub struct Init<'info> {
     pub game_list_pda : Account<'info, GameList>,
     #[account(init, payer = server, space = 9000)]
     pub data : Account<'info,Data>,
+
     pub system_program : Program<'info, System>
 
 }
 #[derive(Accounts)]
 pub struct CreateGameType<'info>{
     #[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    pub game_list : Account<'info, GameList>,
+    pub game_list_pda : Account<'info, GameList>,
     
     // #[account(mut)]
     // /// CHECK:
@@ -188,7 +189,7 @@ pub struct CreateGameType<'info>{
     #[account(mut)]
     pub authority : Signer<'info>,
 
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list.game_type_index]],bump)]
+    #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
     pub game_type_pda : Account<'info, GameType>,
 
     pub system_program : Program<'info, System>
