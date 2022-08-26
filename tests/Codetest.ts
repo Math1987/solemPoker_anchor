@@ -14,6 +14,8 @@ describe("Codetest", async () => {
   const program = anchor.workspace.Codetest as Program<Codetest>;
   let gameList = anchor.web3.Keypair.generate() ;
   let gameType=anchor.web3.Keypair.generate();
+  let player=anchor.web3.Keypair.generate();
+  const solemInc = new anchor.web3.PublicKey("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb") ;
   // let data = anchor.web3.Keypair.generate();
   // let x;
   // let [gameListPda] = await anchor.web3.PublicKey.findProgramAddress(
@@ -79,13 +81,26 @@ describe("Codetest", async () => {
     // console.log("Your transaction signature", tx);
   });
 
-  it("Is initialized!", async () => {
+  it("added player", async () => {
+
+    let [gametype] = await anchor.web3.PublicKey.findProgramAddress(
+        // [(Buffer.from("GAME_TYPE"),Buffer.from(x))], 
+        [
+          Buffer.from("GAME"),
+          new Uint8Array()
+        ],
+  
+        program.programId
+      );
+
     // Add your test here.
     const tx = await program.methods.addPlayer().accounts({
-      server: provider.wallet.publicKey,
+      player:player.publicKey,
       gameList:gameList.publicKey,
+      solemInc:solemInc,
+      server: provider.wallet.publicKey,
+      gamePda:gameType
       systemProgram: SystemProgram.programId
-
     }).signers([gameList]).rpc();
     console.log("Your transaction signature", tx);
     // const gameResult = await program.account.gameList.fetch(gameListPda);

@@ -13,6 +13,7 @@ pub mod codetest {
     use super::*;
 
     pub fn init(ctx: Context<Init>) -> Result<()> {
+        msg!(" L======>16");
         let mut gamelist=&mut ctx.accounts.game_list;
         gamelist.game_type_index=1;
         //gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
@@ -22,10 +23,12 @@ pub mod codetest {
         Ok(())
     }
     pub fn create_game_type(ctx:Context<CreateGameType>,entry_price:u64,max_game:u8,max_player:u8)->Result<()>{
+        msg!(" L======>26");
         let gamelist = &mut ctx.accounts.game_list ;
         let auth=ctx.accounts.authority.key();
         let gametype=&mut ctx.accounts.game_type;
         gametype.last_game_index=1;
+        gametype.last_game_index_to_string=gametype.last_game_index.to_string();
         gametype.authority=auth;
         gametype.entry_price=entry_price;
         gametype.max_player=max_player;
@@ -48,16 +51,23 @@ pub mod codetest {
     }
 
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()>{
+        msg!(" L======>52");
         //let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
         let gamelist = &mut ctx.accounts.game_list;
+        let gametype=&mut ctx.accounts.game_type;
         //ctx.accounts.data.select_id=id; 
+        msg!(" L======>60");
+
         //ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
         let game_type=&mut ctx.accounts.game_type;
-        let entryprice =ctx.accounts.game_type.entry_price;
+        let entryprice =game_type.entry_price;
+        msg!(" L======>65");
         if ctx.accounts.player.lamports() >= entryprice {
+        msg!(" L======>67");
             let game = &mut ctx.accounts.game_pda ;
             if game.Players.len()==0 {
+                msg!(" L======>63"); 
                 game.rm=0;
             }
             let mut full = false ;
@@ -66,21 +76,27 @@ pub mod codetest {
 
             // duplicate entry player check
             loop {
+                msg!(" L======>72"); 
                 if i < game.Players.len() {
+                msg!(" L======>74"); 
                     if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
+                msg!(" L======>76"); 
+
                         can_add = false ;
                         break;     //recheck iteration removal
                     } 
                 }else {
+                msg!(" L======>82"); 
                     break ;
                 }
                 i = i + 1 ;
             }
             if can_add{
+                msg!(" L======>88"); 
                 let mut i = game.Players.len() as u8 ;
-                if i<ctx.accounts.game_type.max_player{
+                if i<game_type.max_player{
+                msg!(" L======>91"); 
                     game.Players.push(ctx.accounts.player.key());
-                    
                     invoke(
                         &system_instruction::transfer( &ctx.accounts.player.key, &game.key(), entryprice),
                         &[
@@ -89,18 +105,24 @@ pub mod codetest {
                             ctx.accounts.system_program.to_account_info()
                         ]
                     )?;
-                }else{
-                    full=true;
                 }
-                if i >= ctx.accounts.game_type.max_player{
+                // else{
+                //     full=true;
+                // }
+                if i >= game_type.max_player{
+                msg!(" L======>106"); 
                     full = true ;
                 }else{
+                msg!(" L======>109");
                     msg!("Player {} enter in game.", ctx.accounts.player.key.to_string()); 
                 }
+                msg!(" L======>112");
             if full{
 
-                ctx.accounts.game_type.last_game_index += 1;
+                msg!("You are inside Full"); 
 
+                game_type.last_game_index += 1;
+                game_type.last_game_index_to_string=game_type.last_game_index.to_string();
                 let treasury_funds = ctx.accounts.game_treasury_pda.lamports() ;
                 let now_ts = Clock::get().unwrap().unix_timestamp ;
                 let random = now_ts%1000 + 1  ;
@@ -120,7 +142,7 @@ pub mod codetest {
                 }
 
                 let final_reward = entryprice*(game.rm as u64) ;
-                let (game_pda, game_seed) = Pubkey::find_program_address(&[&game.key().to_bytes()], ctx.program_id );
+                let (game_pda, game_seed) = Pubkey::find_program_address(&[b"GAME".as_ref(),game_type.key().as_ref()], ctx.program_id );
 
                 let comission = entryprice*3/10 ;
 
@@ -144,7 +166,6 @@ pub mod codetest {
                     ],
                     &[&[
                         "Treasury".as_ref(),
-                        //&[bump_seed],
                     ]],
                 )?;
             }
@@ -242,7 +263,7 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub game_type : Account<'info, GameType>,
     
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),game_type.key().as_ref()],bump)]
+    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
     pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
@@ -307,6 +328,7 @@ pub struct GameType{
     pub max_player:u8,
     pub max_games:u8,
     pub last_game_index:u8,
+    pub last_game_index_to_string:String,
 }
 
 #[account]
