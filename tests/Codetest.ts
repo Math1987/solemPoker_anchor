@@ -68,9 +68,9 @@ describe("Codetest", async () => {
 
       }).signers([gameType]).rpc();
     }
-    // catch (error) {
-    //   console.log(error);
-    // }
+    catch (error) {
+      console.log(error);
+    }
     // const gameResult = await program.account.gameList.fetch(gameListPda);
     // console.log("🚀 ~ file: Codetest.ts ~ line 64 ~ it ~ gameResult", gameResult)
     // const gameResult2 = await program.account.gameList.fetch(gametype);

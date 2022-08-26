@@ -220,6 +220,7 @@ pub struct AddPlayer<'info>{
     // pub data:Account<'info,Data>,
 
     //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    #[account(mut)]
     pub game_list : Account<'info, GameList>,
 
     /// CHECK:
@@ -241,7 +242,7 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub game_type : Account<'info, GameType>,
     
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type.last_game_index]],bump)]
+    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),&[game_type.key()]],bump)]
     pub game_pda : Account<'info, Game>,
 
     pub system_program : Program<'info, System>
