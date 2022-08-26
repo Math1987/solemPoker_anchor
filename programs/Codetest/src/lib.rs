@@ -47,7 +47,7 @@ pub mod codetest {
         Ok(())
     }
 
-    pub fn add_player(ctx: Context<AddPlayer>,id:u8) -> Result<()>{
+    pub fn add_player(ctx: Context<AddPlayer>) -> Result<()>{
         //let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
         let solem_inc_pk = Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
         let gamelist = &mut ctx.accounts.game_list;

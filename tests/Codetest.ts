@@ -79,4 +79,23 @@ describe("Codetest", async () => {
     // console.log("Your transaction signature", tx);
   });
 
+  it("Is initialized!", async () => {
+    // Add your test here.
+    const tx = await program.methods.addPlayer()).accounts({
+      server: provider.wallet.publicKey,
+      gameList:gameList.publicKey,
+      systemProgram: SystemProgram.programId
+
+    }).signers([gameList]).rpc();
+    console.log("Your transaction signature", tx);
+    // const gameResult = await program.account.gameList.fetch(gameListPda);
+    // // console.log("🚀 ~ file: Codetest.ts ~ line 33 ~ it ~ gameResult", gameResult.gameTypeIndex.valueOf())
+    // x = gameResult.gameTypeIndex.toString();
+    // // console.log("🚀 ~ file: Codetest.ts ~ line 36 ~ it ~ x", x)
+
+    // const gameResult2 = await program.account.data.fetch(data.publicKey);
+    // // console.log("🚀 ~ file: Codetest.ts ~ line 35 ~ it ~ gameResult2", gameResult2)
+
+  });
+
 });
