@@ -229,7 +229,7 @@ pub struct AddPlayer<'info>{
     #[account(mut)]
     pub solem_inc : AccountInfo<'info>,
 
-    // CHECK:
+    /// CHECK:
     #[account(mut)]
     pub game_treasury_pda : AccountInfo<'info>,
 
