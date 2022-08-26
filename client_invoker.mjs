@@ -37,15 +37,20 @@ async function main() {
   console.log("🚀 ~ file: client_invoker.mjs ~ line 37 ~ main ~ gameList", gameList.publicKey.toBase58());
   let gameType = anchor.web3.Keypair.generate();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 39 ~ main ~ gameType", gameType.publicKey.toBase58());
-  let player1=anchor.web3.Keypair.generate();
+  // let player1=anchor.web3.Keypair.generate();
+  let player1 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player1.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ player1", player1.publicKey.toBase58())
-  let player2=anchor.web3.Keypair.generate();
+  // let player2=anchor.web3.Keypair.generate();
+  let player2 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player2.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 43 ~ main ~ player2", player2.publicKey.toBase58())
-  let player3=anchor.web3.Keypair.generate();
+  // let player3=anchor.web3.Keypair.generate();
+  let player3 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player3.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 45 ~ main ~ player3", player3.publicKey.toBase58())
-  let player4=anchor.web3.Keypair.generate();
+  // let player4=anchor.web3.Keypair.generate();
+  let player4 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player4.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ player4", player4.publicKey.toBase58())
-  let player5=anchor.web3.Keypair.generate();
+  // let player5=anchor.web3.Keypair.generate();
+  let player5 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player5.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 49 ~ main ~ player5", player5.publicKey.toBase58())
 
   // create a data_account // this should be created only with the init method, and later should be saved
