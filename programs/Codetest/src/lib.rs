@@ -136,7 +136,10 @@ pub mod codetest {
                     );
 
                     game.Players.push(ctx.accounts.player.key());
-                    i = game.Players.len(); // increased value of i
+                    i = game.Players.len(); // increased value of
+                    
+                    msg!("L141 =======> value of i ==== {}",i);
+                    
                     msg!(
                         "<----game.Players.len()----> l====114==={}",
                         game.Players.len()
@@ -158,8 +161,8 @@ pub mod codetest {
                 msg!("L157====value of i -----------> {}", i);
                 msg!("L158====value of full -----------> {}", full);
                 msg!(
-                    "L159====value of gametype.max_player -----------> {}",
-                    gametype.max_player
+                    "L1590====value of gametype.max_player -----------> {}",
+                    gametype.max_player as usize
                 );
                 msg!(
                     "L165====value of  game.Players.len() -----------> {}",
