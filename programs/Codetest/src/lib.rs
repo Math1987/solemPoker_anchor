@@ -158,7 +158,7 @@ pub mod codetest {
                         ],
                     )?;
                 }
-                msg!("L157====value of i -----------> {}", i);
+                msg!("L1570====value of i -----------> {}", i);
                 msg!("L158====value of full -----------> {}", full);
                 msg!(
                     "L1590====value of gametype.max_player -----------> {}",
@@ -169,7 +169,13 @@ pub mod codetest {
                     game.Players.len()
                 );
 
-                if i >= gametype.max_player as usize {
+                msg!("L1720====i >= gametype.max_player -----------> {}", i >= gametype.max_player as usize);
+
+
+                msg!("🚀 ~ file: lib.rs ~ line 193 ~ ifctx.accounts.player.lamports ~ i {}", i);
+                msg!("🚀 ~ file: lib.rs ~ line 194 ~ ifctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player-1);
+
+                if i as usize >= (gametype.max_player-1) as usize {
                     msg!(" L======>106");
 
                     full = true;
