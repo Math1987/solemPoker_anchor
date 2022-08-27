@@ -53,217 +53,243 @@ pub mod codetest {
     }
 
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()> {
-        msg!(" L======>52");
+        msg!("Line 56: we are inside add_player");
+
         //let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
         let solem_inc_pk =
             Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
-        let gamelist = &mut ctx.accounts.game_list;
-        let gametype = &mut ctx.accounts.game_type;
+
+        let gamelist = &mut ctx.accounts.game_list; // data account
+        let gametype = &mut ctx.accounts.game_type; // data account
+        let game = &mut ctx.accounts.game_pda; // PDA account
+
         //ctx.accounts.data.select_id=id;
-        msg!(" L======>60");
+
         msg!(
-            " l==========61 game key {} game last index {}",
+            "🚀 ~ file: lib.rs ~ line 64 ~ pub fn add_player ~ gamelist account: {} ",
+            gamelist.key()
+        );
+        msg!(
+            " l==========61 gametype key {} gametype.last_game_index: {}",
             gametype.key(),
             gametype.last_game_index
         );
+        msg!(
+            "🚀 ~ file: lib.rs ~ line 64 ~ pub fn add_player ~ game PDA account: {} ",
+            game.key()
+        );
+
         // ctx.accounts.data.select_id_string=ctx.accounts.data.select_id_string.to_string();
+
         // let game_type=&mut ctx.accounts.game_type;
-        let entryprice = gametype.entry_price;
-        msg!(" L======>65");
-        if ctx.accounts.player.lamports() >= entryprice {
-            msg!(" L======>67");
-            let game = &mut ctx.accounts.game_pda;
-            if game.Players.len() == 0 {
-                msg!(" L======>63");
-                game.rm = 0;
-            }
-            msg!("gamme rewar multiplicator l====73 rm==={}", game.rm);
-            let mut full = false;
-            msg!("fullll initialize --------75----------> {}", full);
-            let mut i: usize = 0;
-            let mut can_add = true;
 
-            // duplicate entry player check
-            loop {
-                msg!(" L======>72");
-                if i < game.Players.len() {
-                    msg!("<----i----> l====82==={}", i);
-                    msg!(
-                        "<----game.Players.len()----> l====83==={}",
-                        game.Players.len()
-                    );
-                    msg!(" L======>74");
+        let entryprice = gametype.entry_price; // local var
 
-                    if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
-                        msg!(" L======>76");
-                        msg!("<----can_add----> l===88==={}", can_add);
+        if game.Players.len() < gametype.max_player as usize {
+            if ctx.accounts.player.lamports() >= entryprice {
+                msg!(" L======>67 lamports greater then required");
 
-                        can_add = false;
-                        msg!("<----can_add----> l====102==={}", can_add);
-
-                        //recheck iteration removal
-                    }
-                } else {
-                    msg!(" L======>82");
-                    break;
+                if game.Players.len() == 0 {
+                    msg!("L======>63 setting reward multiplicator as 0 when there are no players in the vector");
+                    game.rm = 0; // setting reward multiplicator as 0
                 }
-                i = i + 1;
-            }
-            
-            // now only player that are not duplicated
-            if can_add {
-                msg!(" L======>88");
+
+                // else we are printing rm of each game PDA
+                msg!("game reward multiplicator l====73 rm==={}", game.rm);
+
+                // checking full state / room state of the game
+                let mut full = false;
                 msg!(
-                    "<----game.Players.len()----> l====103==={}",
-                    game.Players.len()
-                );
-                let mut i = game.Players.len();
-                msg!(
-                    "<----game.Players.len()----> l====104==={}",
-                    game.Players.len()
-                );
-                //added player public key in game.players
-                // transfered player entry fee to game account
-                msg!(
-                    "<----gametype.max_player----> l====107==={}",
-                    gametype.max_player
+                    "🚀 ~ file: lib.rs ~ line 96 ~ if ctx.accounts.player.lamports ~ full {}",
+                    full
                 );
 
-                if i <= gametype.max_player as usize {
-                    msg!(" L======>132");
-                    msg!(
-                        "<----game.Players.len()----> l====111==={}",
-                        game.Players.len()
-                    );
+                let mut i = 0; // indexer
+                let mut can_add = true; // true by default
 
-                    game.Players.push(ctx.accounts.player.key());
-                    i = game.Players.len(); // increased value of
-                    
-                    msg!("L141 =======> value of i ==== {}",i);
-                    
-                    msg!(
-                        "<----game.Players.len()----> l====114==={}",
-                        game.Players.len()
-                    );
+                // duplicate entry player check
+                // will not work for first player
+                // total 3 players:  => i=0;1;2; (total 3 times)
+                loop {
+                    msg!("L======>72 duplicate entry player check loop");
+                    if i < game.Players.len() {
+                        msg!(
+                            "🚀 ~ file: lib.rs ~ line 115 ~ if i<game.Players.len ~ i {}",
+                            i
+                        );
+                        msg!("🚀 ~ file: lib.rs ~ line 115 ~ if i<game.Players.len ~ game.Players.len() current players in room: {}", game.Players.len());
 
-                    invoke(
-                        &system_instruction::transfer(
-                            &ctx.accounts.player.key,
-                            &game.key(),
-                            entryprice,
-                        ),
-                        &[
-                            ctx.accounts.player.to_account_info(),
-                            game.to_account_info(),
-                            ctx.accounts.system_program.to_account_info(),
-                        ],
-                    )?;
-                }
-                msg!("L1570====value of i -----------> {}", i);
-                msg!("L158====value of full -----------> {}", full);
-                msg!(
-                    "L1590====value of gametype.max_player -----------> {}",
-                    gametype.max_player as usize
-                );
-                msg!(
-                    "L165====value of  game.Players.len() -----------> {}",
-                    game.Players.len()
-                );
+                        if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
+                            msg!("Line 199: In this case the all players in room will be checked with current player passed, and match found here");
+                            msg!("Line 120: Cannot add this player, terminating the instruction!");
 
-                msg!("L1720====i >= gametype.max_player -----------> {}", i >= gametype.max_player as usize);
-
-
-                msg!("🚀 ~ file: lib.rs ~ line 193 ~ ifctx.accounts.player.lamports ~ i {}", i);
-                msg!("🚀 ~ file: lib.rs ~ line 194 ~ ifctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player);
-
-                if i as usize >= (gametype.max_player) as usize {
-                    msg!(" L======>106");
-
-                    full = true;
-
-                    msg!("Updating value of full =======true====131===={}", full);
-                } else {
-                    msg!(" L======>109");
-                    msg!(
-                        "Player {} enter in game.",
-                        ctx.accounts.player.key.to_string()
-                    );
-                }
-                msg!(" L======>112");
-                msg!(
-                    "l=============123 game key {} game last index {}",
-                    gametype.key(),
-                    gametype.last_game_index
-                );
-
-                msg!("L179 ===========> value of full before exiting: {}", full);
-
-                if full {
-                    msg!(
-                        "l==========127 game key {} game last index {}",
-                        gametype.key(),
-                        gametype.last_game_index
-                    );
-
-                    msg!("You are inside Full");
-
-                    gametype.last_game_index += 1;
-                    gametype.last_game_index_to_string = gametype.last_game_index.to_string();
-                    let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
-                    let now_ts = Clock::get().unwrap().unix_timestamp;
-                    let random = now_ts % 1000 + 1;
-                    let players_funds = 3 * entryprice * 9 / 10;
-                    let players_funds = 3 * entryprice * 9 / 10;
-                    msg!(" L======>133");
-                    if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
-                        game.rm = 50;
-                    } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
-                        game.rm = 10;
-                    } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
-                        game.rm = 5;
-                    } else if random > 690 && treasury_funds >= players_funds * 3 {
-                        game.rm = 3;
+                            can_add = false; // terminate the instruction
+                            break;
+                        }
                     } else {
-                        game.rm = 2;
+                        msg!("Line 129: proceed for next phase i.e can_add");
+                        break; // simple breaking when no match found; with can_add == true; proceed for next phase
                     }
-                    msg!(" L======>145");
-                    let final_reward = entryprice * (game.rm as u64);
-                    let (game_pda, game_seed) = Pubkey::find_program_address(
-                        &[
-                            b"GAME".as_ref(),
-                            gametype.last_game_index_to_string.as_ref(),
-                        ],
-                        ctx.program_id,
+                    i = i + 1;
+                }
+
+                // now only player that are not duplicated can enter this next phase
+                if can_add {
+                    msg!("Line 137: we are inside can_add phase, which is second phase");
+                    msg!(
+                        "<----game.Players.len()----> l====103==={}",
+                        game.Players.len()
                     );
+                    let mut pre_add_state: usize = 0; // by default we are saying that there are no players in gamePda
+                    let mut post_add_state: usize = 0;
 
-                    let comission = entryprice * 3 / 10;
+                    pre_add_state = game.Players.len(); //pre add
+                    msg!("🚀 ~ file: lib.rs ~ line 146 ~ ifctx.accounts.player.lamports ~ pre_add_state {}", pre_add_state);
 
-                    // invoke_signed(
-                    //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
-                    //     &[
-                    //         ctx.accounts.global_treasury_pda.to_account_info(),
-                    //         ctx.accounts.game_pda.to_account_info(),
-                    //         ctx.accounts.system_program.to_account_info()
-                    //     ],
-                    //     &[&["Treasury".as_ref(),
-                    //         &[bump_seed],
-                    //     ]],
-                    // )?;
-                    msg!(" L======>162");
-                    invoke_signed(
-                        &system_instruction::transfer(&game_pda.key(), &solem_inc_pk, comission),
-                        &[
-                            ctx.accounts.game_pda.to_account_info(),
-                            ctx.accounts.solem_inc.to_account_info(),
-                            ctx.accounts.system_program.to_account_info(),
-                        ],
-                        &[&[
-                            "GAME".as_ref(),
-                            gametype.last_game_index_to_string.as_ref(),
-                            &[game_seed],
-                        ]],
-                    )?;
-                    msg!(" L======>174");
+                    // added player public key in game.players
+                    // transfered player entry fee to game account
+
+                    msg!("🚀 ~ file: lib.rs ~ line 153 ~ if ctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player);
+
+                    if pre_add_state < gametype.max_player as usize {
+                        // i<=gametype.max_player  => i<gametype.max_player
+                        // because when pre_add_state 3==3, we'll be inside a new gamePda
+                        msg!("Line 155: same gamePda (for 1,2,3 player), pre_add_state < gametype.max_player");
+
+                        game.Players.push(ctx.accounts.player.key()); // 1st,2nd,3rd player
+                        post_add_state = game.Players.len(); // In case of 3 players added, this value will be == 3
+                        msg!("🚀 ~ file: lib.rs ~ line 159 ~ ifctx.accounts.player.lamports ~ post_add_state == game.Players.len() Your player is been successfully added: {}", post_add_state);
+                        msg!("🚀 ~ file: lib.rs ~ line 160 ~ ifctx.accounts.player.lamports ~ pre_add_state Your player is been successfully added: {}", pre_add_state);
+
+                        // transfered player entry fee to game account
+
+                        invoke(
+                            &system_instruction::transfer(
+                                &ctx.accounts.player.key,
+                                &game.key(), // local var .key()
+                                entryprice,
+                            ),
+                            &[
+                                ctx.accounts.player.to_account_info(),
+                                game.to_account_info(),
+                                ctx.accounts.system_program.to_account_info(),
+                            ],
+                        )?;
+                        msg!("Line 177: entry fee is successfully transferred to gamePda Account")
+                    }
+                    // entry fee is successfully transferred to gamePda Account
+
+                    msg!(
+                        "🚀 ~ file: lib.rs ~ line 182 ~ if ctx.accounts.player.lamports ~ full {}",
+                        full
+                    ); // full status
+                    msg!("🚀 ~ file: lib.rs ~ line 186 ~ if ctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player); // max_players in game
+
+                    post_add_state = game.Players.len(); // In case of 3 players added, this value will be == 3 // repeated for convenience
+                    msg!("🚀 ~ file: lib.rs ~ line 185 ~ ifctx.accounts.player.lamports ~ post_add_state {}", post_add_state);
+                    if post_add_state as usize == (gametype.max_player) as usize {
+                        // >=   ===>  ==
+
+                        full = true;
+                        msg!("🚀 ~ file: lib.rs ~ line 188 ~ if ctx.accounts.player.lamports ~ UPDATED full - PHASE 2 {}", full);
+                        msg!(
+                            "Player {} has entered in game, and entryfee is also deducted. And also the game if full",
+                            ctx.accounts.player.key.to_string()
+                        );
+                        msg!(
+                            "Line 200: gametype key {} gametype last_game_index {}",
+                            gametype.key(),
+                            gametype.last_game_index
+                        );
+                        msg!(
+                            "Line 205: game key {} game struct game.Players {:#?}",
+                            game.key(),
+                            game.Players
+                        );
+                    } else {
+                        msg!(
+                            "Player {} has entered in game, and entryfee is also deducted. But the game has still some space",
+                            ctx.accounts.player.key.to_string()
+                        );
+                        msg!(
+                            "Line 211: gametype key {} gametype last_game_index {}",
+                            gametype.key(),
+                            gametype.last_game_index
+                        );
+                    }
+
+                    // phase 3: once all players have taken place we should mark current gamePda account as full
+                    if full {
+                        msg!(
+                            "l==========127 game key {} game last index {}",
+                            gametype.key(),
+                            gametype.last_game_index
+                        );
+
+                        msg!("You are inside Full");
+
+                        gametype.last_game_index += 1;
+                        gametype.last_game_index_to_string = gametype.last_game_index.to_string();
+                        let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
+                        let now_ts = Clock::get().unwrap().unix_timestamp;
+                        let random = now_ts % 1000 + 1;
+                        let players_funds = 3 * entryprice * 9 / 10;
+                        let players_funds = 3 * entryprice * 9 / 10;
+                        msg!(" L======>133");
+                        if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
+                            game.rm = 50;
+                        } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
+                            game.rm = 10;
+                        } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
+                            game.rm = 5;
+                        } else if random > 690 && treasury_funds >= players_funds * 3 {
+                            game.rm = 3;
+                        } else {
+                            game.rm = 2;
+                        }
+                        msg!(" L======>145");
+                        let final_reward = entryprice * (game.rm as u64);
+                        let (game_pda, game_seed) = Pubkey::find_program_address(
+                            &[
+                                b"GAME".as_ref(),
+                                gametype.last_game_index_to_string.as_ref(),
+                            ],
+                            ctx.program_id,
+                        );
+
+                        let comission = entryprice * 3 / 10;
+
+                        // invoke_signed(
+                        //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
+                        //     &[
+                        //         ctx.accounts.global_treasury_pda.to_account_info(),
+                        //         ctx.accounts.game_pda.to_account_info(),
+                        //         ctx.accounts.system_program.to_account_info()
+                        //     ],
+                        //     &[&["Treasury".as_ref(),
+                        //         &[bump_seed],
+                        //     ]],
+                        // )?;
+                        msg!(" L======>162");
+                        invoke_signed(
+                            &system_instruction::transfer(
+                                &game_pda.key(),
+                                &solem_inc_pk,
+                                comission,
+                            ),
+                            &[
+                                ctx.accounts.game_pda.to_account_info(),
+                                ctx.accounts.solem_inc.to_account_info(),
+                                ctx.accounts.system_program.to_account_info(),
+                            ],
+                            &[&[
+                                "GAME".as_ref(),
+                                gametype.last_game_index_to_string.as_ref(),
+                                &[game_seed],
+                            ]],
+                        )?;
+                        msg!(" L======>174");
+                    }
                 }
             }
         }
@@ -349,7 +375,7 @@ pub struct AddPlayer<'info> {
     #[account(mut)]
     pub game_type: Account<'info, GameType>,
 
-    #[account(init_if_needed,payer = authority, space = 9000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
     pub game_pda: Account<'info, Game>,
 
     pub system_program: Program<'info, System>,
