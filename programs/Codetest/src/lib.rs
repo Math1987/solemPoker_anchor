@@ -99,7 +99,7 @@ pub mod codetest {
                         msg!("<----can_add----> l===88==={}", can_add);
 
                         can_add = false;
-                        msg!("<----can_add----> l====91==={}", can_add);
+                        msg!("<----can_add----> l====102==={}", can_add);
 
                         //recheck iteration removal
                     }
@@ -129,13 +129,14 @@ pub mod codetest {
                 );
 
                 if i < gametype.max_player as usize {
-                    msg!(" L======>91");
+                    msg!(" L======>132");
                     msg!(
                         "<----game.Players.len()----> l====111==={}",
                         game.Players.len()
                     );
 
                     game.Players.push(ctx.accounts.player.key());
+                    i = game.Players.len(); // increased value of i
                     msg!(
                         "<----game.Players.len()----> l====114==={}",
                         game.Players.len()
@@ -154,7 +155,16 @@ pub mod codetest {
                         ],
                     )?;
                 }
-                msg!("value of i -----------> {}", i);
+                msg!("L157====value of i -----------> {}", i);
+                msg!("L158====value of full -----------> {}", full);
+                msg!(
+                    "L159====value of gametype.max_player -----------> {}",
+                    gametype.max_player
+                );
+                msg!(
+                    "L165====value of  game.Players.len() -----------> {}",
+                    game.Players.len()
+                );
 
                 if i >= gametype.max_player as usize {
                     msg!(" L======>106");
@@ -175,6 +185,8 @@ pub mod codetest {
                     gametype.key(),
                     gametype.last_game_index
                 );
+
+                msg!("L179 ===========> value of full before exiting: {}", full);
 
                 if full {
                     msg!(
