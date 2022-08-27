@@ -109,6 +109,7 @@ pub mod codetest {
                 }
                 i = i + 1;
             }
+            
             // now only player that are not duplicated
             if can_add {
                 msg!(" L======>88");
@@ -128,7 +129,7 @@ pub mod codetest {
                     gametype.max_player
                 );
 
-                if i < gametype.max_player as usize {
+                if i <= gametype.max_player as usize {
                     msg!(" L======>132");
                     msg!(
                         "<----game.Players.len()----> l====111==={}",
@@ -173,9 +174,9 @@ pub mod codetest {
 
 
                 msg!("🚀 ~ file: lib.rs ~ line 193 ~ ifctx.accounts.player.lamports ~ i {}", i);
-                msg!("🚀 ~ file: lib.rs ~ line 194 ~ ifctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player-1);
+                msg!("🚀 ~ file: lib.rs ~ line 194 ~ ifctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player);
 
-                if i as usize >= (gametype.max_player-1) as usize {
+                if i as usize >= (gametype.max_player) as usize {
                     msg!(" L======>106");
 
                     full = true;
