@@ -40,18 +40,52 @@ async function main() {
   // let player1=anchor.web3.Keypair.generate();
   let player1 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player1.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ player1", player1.publicKey.toBase58())
+
+  let airdrop_tx_id = await provider.connection.requestAirdrop(player1.publicKey, anchor.web3.LAMPORTS_PER_SOL );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  let latestBlockhash = await provider.connection.getLatestBlockhash();
+  let confirmation_response = await provider.connection.confirmTransaction({signature:airdrop_tx_id, ...latestBlockhash});
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+
   // let player2=anchor.web3.Keypair.generate();
   let player2 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player2.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 43 ~ main ~ player2", player2.publicKey.toBase58())
+
+  airdrop_tx_id = await provider.connection.requestAirdrop(player2.publicKey, anchor.web3.LAMPORTS_PER_SOL );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  latestBlockhash = await provider.connection.getLatestBlockhash();
+  confirmation_response = await provider.connection.confirmTransaction({signature:airdrop_tx_id, ...latestBlockhash});
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+
   // let player3=anchor.web3.Keypair.generate();
   let player3 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player3.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 45 ~ main ~ player3", player3.publicKey.toBase58())
+
+  airdrop_tx_id = await provider.connection.requestAirdrop(player3.publicKey, anchor.web3.LAMPORTS_PER_SOL );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  latestBlockhash = await provider.connection.getLatestBlockhash();
+  confirmation_response = await provider.connection.confirmTransaction({signature:airdrop_tx_id, ...latestBlockhash});
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+
   // let player4=anchor.web3.Keypair.generate();
   let player4 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player4.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ player4", player4.publicKey.toBase58())
+
+  airdrop_tx_id = await provider.connection.requestAirdrop(player4.publicKey, anchor.web3.LAMPORTS_PER_SOL );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  latestBlockhash = await provider.connection.getLatestBlockhash();
+  confirmation_response = await provider.connection.confirmTransaction({signature:airdrop_tx_id, ...latestBlockhash});
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+
   // let player5=anchor.web3.Keypair.generate();
   let player5 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player5.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 49 ~ main ~ player5", player5.publicKey.toBase58())
+
+  airdrop_tx_id = await provider.connection.requestAirdrop(player5.publicKey, anchor.web3.LAMPORTS_PER_SOL );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  latestBlockhash = await provider.connection.getLatestBlockhash();
+  confirmation_response = await provider.connection.confirmTransaction({signature:airdrop_tx_id, ...latestBlockhash});
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
 
   // create a data_account // this should be created only with the init method, and later should be saved
   // let data_account = anchor.web3.Keypair.generate();
