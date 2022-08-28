@@ -38,6 +38,15 @@ async function main() {
   let gameType = anchor.web3.Keypair.generate();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 39 ~ main ~ gameType", gameType.publicKey.toBase58());
 
+    // Derive globalTresuryPda // this is used only for transferring commission to solemInc
+    let [globalTreasuryPda] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GlobalTreasury"),
+      ],
+      CodetestProgram.programId
+    );
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 48 ~ main ~ globalTreasuryPda", globalTreasuryPda.toBase58());
+
   const solemInc = new anchor.web3.PublicKey("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb");
 
   // let player1=anchor.web3.Keypair.generate();
@@ -163,7 +172,7 @@ async function main() {
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    // gameTreasuryPda: gameTreasuryPda,
+    globalTreasuryPda: globalTreasuryPda,
     gameType: gameType.publicKey,
     gamePda: gamePda_P1,
     systemProgram: SystemProgram.programId
@@ -205,7 +214,7 @@ async function main() {
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    // gameTreasuryPda: gameTreasuryPda,
+    globalTreasuryPda: globalTreasuryPda,
     gameType: gameType.publicKey,
     gamePda: gamePda_P2,
     systemProgram: SystemProgram.programId
@@ -247,7 +256,7 @@ async function main() {
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    // gameTreasuryPda: gameTreasuryPda,
+    globalTreasuryPda: globalTreasuryPda,
     gameType: gameType.publicKey,
     gamePda: gamePda_P3,
     systemProgram: SystemProgram.programId
@@ -289,7 +298,7 @@ async function main() {
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    // gameTreasuryPda: gameTreasuryPda,
+    globalTreasuryPda: globalTreasuryPda,
     gameType: gameType.publicKey,
     gamePda: gamePda_P4,  // client side is sending the new game PDA
     systemProgram: SystemProgram.programId
@@ -332,7 +341,7 @@ async function main() {
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    // gameTreasuryPda: gameTreasuryPda,
+    globalTreasuryPda: globalTreasuryPda,
     gameType: gameType.publicKey,
     gamePda: gamePda_P5,
     systemProgram: SystemProgram.programId
@@ -343,6 +352,10 @@ async function main() {
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
   let gamePda_P5_Result = await CodetestProgram.account.game.fetch(gamePda_P5);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
+
+  // Printing Balance of Global Treasury PDA
+  let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
 
 }
 

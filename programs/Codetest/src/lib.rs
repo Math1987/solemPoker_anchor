@@ -55,13 +55,14 @@ pub mod codetest {
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()> {
         msg!("Line 56: we are inside add_player");
 
-        //let (global_treasury_pda, bump_seed) = Pubkey::find_program_address(&[b"Treasury"], ctx.program_id );
+        let (global_treasury_pda, global_treasury_pda_bump_seed) = Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id ); // this is used only for transferring commission to solemInc
         let solem_inc_pk =
             Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
 
         let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
         let game = &mut ctx.accounts.game_pda; // PDA account
+        let globaltreasury = &mut ctx.accounts.global_treasury_pda; // PDA account
 
         //ctx.accounts.data.select_id=id;
 
@@ -163,23 +164,24 @@ pub mod codetest {
                         msg!("🚀 ~ file: lib.rs ~ line 159 ~ ifctx.accounts.player.lamports ~ post_add_state == game.Players.len() Your player is been successfully added: {}", post_add_state);
                         msg!("🚀 ~ file: lib.rs ~ line 160 ~ ifctx.accounts.player.lamports ~ pre_add_state Your player is been successfully added: {}", pre_add_state);
 
-                        // transfered player entry fee to game account
-
+                        // transfered player entry fee to global_treasury_pda account
                         invoke(
                             &system_instruction::transfer(
                                 &ctx.accounts.player.key,
-                                &game.key(), // local var .key()
+                                // &game.key(), // local var .key()
+                                &global_treasury_pda.key(), // local var .key()
                                 entryprice,
                             ),
                             &[
                                 ctx.accounts.player.to_account_info(),
-                                game.to_account_info(),
+                                // game.to_account_info(),
+                                globaltreasury.to_account_info(),
                                 ctx.accounts.system_program.to_account_info(),
                             ],
                         )?;
-                        msg!("Line 177: entry fee is successfully transferred to gamePda Account")
+                        msg!("Line 177: entry fee is successfully transferred to global_treasury_pda Account")
                     }
-                    // entry fee is successfully transferred to gamePda Account
+                    // entry fee is successfully transferred to global_treasury_pda Account
 
                     // will still be false; not yet updated after initialized
                     msg!(
@@ -241,35 +243,34 @@ pub mod codetest {
 
                         gametype.last_game_index_to_string = gametype.last_game_index.to_string(); // string type
 
-                        // not required
-                        // let treasury_funds = ctx.accounts.game_treasury_pda.lamports(); // In case of game_treasury_pda, which we are no more using.
-
                         msg!("Line 248: Below logic is only for setting up game reward multiplicator");
                         // let treasury_funds = ctx.accounts.game_pda.to_account_info().lamports.borrow(); // donator_program_account.to_account_info().try_borrow_mut_lamports()?
+                        let treasury_funds = globaltreasury.lamports(); // In case of game_treasury_pda // // let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
 
-                        // let now_ts = Clock::get().unwrap().unix_timestamp;
-                        // let random = now_ts % 1000 + 1;
-                        // let players_funds = 3 * entryprice * 9 / 10;
 
-                        // // Logic Implementation in Rust Issue: binary operation `>=` cannot be applied to type `Ref<'_, &mut u64>`rustcE0369
-                        // if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
-                        //     game.rm = 50;
-                        // } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
-                        //     game.rm = 10;
-                        // } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
-                        //     game.rm = 5;
-                        // } else if random > 690 && treasury_funds >= players_funds * 3 {
-                        //     game.rm = 3;
-                        // } else {
-                        //     game.rm = 2;
-                        // }
+                        let now_ts = Clock::get().unwrap().unix_timestamp;
+                        let random = now_ts % 1000 + 1;
+                        let players_funds = 3 * entryprice * 9 / 10;
 
-                        // Hard coded rm value for the time being
-                        game.rm = 2;
+                        // Logic Implementation in Rust Issue: binary operation `>=` cannot be applied to type `Ref<'_, &mut u64>`rustcE0369
+                        if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
+                            game.rm = 50;
+                        } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
+                            game.rm = 10;
+                        } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
+                            game.rm = 5;
+                        } else if random > 690 && treasury_funds >= players_funds * 3 {
+                            game.rm = 3;
+                        } else {
+                            game.rm = 2;
+                        }
+
+                        // // Hard coded rm value for the time being when using gamePda itself as a global_treasury_pda
+                        // game.rm = 2;
 
                         msg!(" L======>145");
-                        // let final_reward = entryprice * (game.rm as u64); // no more required to send to game_treasury_account;
-                        // already taken in game_pda account
+                        // let final_reward = entryprice * (game.rm as u64); // no more required to send to each game_treasury_account;
+                        // already taken in global_treasury_pda account
 
                         let gametype_previous_last_game_index = gametype.last_game_index - 1;
                         let gametype_previous_last_game_index_string =
@@ -289,7 +290,7 @@ pub mod codetest {
 
                         let comission = entryprice * 3 / 10;
 
-                        // transfer final_reward from global_treasury_pda to game_pda // no more required
+                        // transfer final_reward from global_treasury_pda to game_pda // no more required, can be done using global_treasury_itself
                         // invoke_signed(
                         //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
                         //     &[
@@ -304,24 +305,29 @@ pub mod codetest {
                         msg!("Line 293: About to transfer commission to SolemInc");
 
                         // // 'Program 11111111111111111111111111111111 invoke [2]', 'Transfer: `from` must not carry data', 'Program 11111111111111111111111111111111 failed: invalid program argument'
-                        // invoke_signed(
-                        //     &system_instruction::transfer(
-                        //         &game_pda.key(),
-                        //         &solem_inc_pk,
-                        //         comission,
-                        //     ),
-                        //     &[
-                        //         ctx.accounts.game_pda.to_account_info(),
-                        //         ctx.accounts.solem_inc.to_account_info(),
-                        //         ctx.accounts.system_program.to_account_info(),
-                        //     ],
-                        //     &[&[
-                        //         "GAME".as_ref(),
-                        //         // gametype.last_game_index_to_string.as_ref(), // this is already updated; and hence we need to take the existing value
-                        //         gametype_previous_last_game_index_string.as_ref(), // this is already updated; and hence we need to take the existing value
-                        //         &[game_seed],
-                        //     ]],
-                        // )?;
+                        invoke_signed(
+                            &system_instruction::transfer(
+                                &global_treasury_pda,
+                                &solem_inc_pk,
+                                comission,
+                            ),
+                            &[
+                                ctx.accounts.global_treasury_pda.to_account_info(), // &globaltreasury.key()
+                                ctx.accounts.solem_inc.to_account_info(),
+                                ctx.accounts.system_program.to_account_info(),
+                            ],
+                            &[&[
+                                // In case of GamePDA
+                                // "GAME".as_ref(),
+                                // // gametype.last_game_index_to_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                                // gametype_previous_last_game_index_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                                // &[game_seed],
+
+                                // In case of GlobalTreasuryPDA
+                                "GlobalTreasury".as_ref(), // TREASURY_PDA_SEED.as_ref(),
+                                &[global_treasury_pda_bump_seed],
+                            ]],
+                        )?;
                         msg!("Line 311, Commission transferred to solem inc only when game room is full");
                     }
                 }
@@ -391,10 +397,10 @@ pub struct AddPlayer<'info> {
     pub game_list: Account<'info, GameList>,
 
     /// CHECK:
-    // #[account(mut)]
-    // pub global_treasury_pda : AccountInfo<'info>,
-    /// CHECK:
+    #[account(mut)]
+    pub global_treasury_pda : AccountInfo<'info>, // since we want to use .lamports() method
 
+    /// CHECK:
     #[account(mut)]
     pub solem_inc: AccountInfo<'info>,
 
