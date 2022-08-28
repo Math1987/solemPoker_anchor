@@ -85,6 +85,9 @@ pub mod codetest {
 
         let entryprice = gametype.entry_price; // local var
 
+        // why < ?   and not ===>     <=
+        // because the third player is entering using this instruction
+        // that means the current game.Players.len() should be < gametype.max_player
         if game.Players.len() < gametype.max_player as usize {
             if ctx.accounts.player.lamports() >= entryprice {
                 msg!(" L======>67 lamports greater then required");
@@ -97,15 +100,14 @@ pub mod codetest {
                 // else we are printing rm of each game PDA
                 msg!("game reward multiplicator l====73 rm==={}", game.rm);
 
-                // checking full state / room state of the game
+                let mut i = 0; // indexer used for duplicate entry player check == Phase 1
+                let mut can_add = true; // true by default == Phase 2
+                                        // checking full state / room state of the game == Phase 3
                 let mut full = false;
                 msg!(
                     "🚀 ~ file: lib.rs ~ line 96 ~ if ctx.accounts.player.lamports ~ full {}",
                     full
                 );
-
-                let mut i = 0; // indexer
-                let mut can_add = true; // true by default
 
                 // duplicate entry player check
                 // will not work for first player
@@ -123,7 +125,7 @@ pub mod codetest {
                             msg!("Line 199: In this case the all players in room will be checked with current player passed, and match found here");
                             msg!("Line 120: Cannot add this player, terminating the instruction!");
 
-                            can_add = false; // terminate the instruction
+                            can_add = false; // terminate the instruction in case of false
                             break;
                         }
                     } else {
@@ -179,6 +181,7 @@ pub mod codetest {
                     }
                     // entry fee is successfully transferred to gamePda Account
 
+                    // will still be false; not yet updated after initialized
                     msg!(
                         "🚀 ~ file: lib.rs ~ line 182 ~ if ctx.accounts.player.lamports ~ full {}",
                         full
@@ -190,7 +193,7 @@ pub mod codetest {
                     if post_add_state as usize == (gametype.max_player) as usize {
                         // >=   ===>  ==
 
-                        full = true;
+                        full = true; // here the value of full gets updated
                         msg!("🚀 ~ file: lib.rs ~ line 188 ~ if ctx.accounts.player.lamports ~ UPDATED full - PHASE 2 {}", full);
                         msg!(
                             "Player {} has entered in game, and entryfee is also deducted. And also the game if full",
@@ -218,78 +221,109 @@ pub mod codetest {
                         );
                     }
 
-                    // phase 3: once all players have taken place we should mark current gamePda account as full
-                    // if full {
-                    //     msg!(
-                    //         "l==========127 game key {} game last index {}",
-                    //         gametype.key(),
-                    //         gametype.last_game_index
-                    //     );
+                    // // phase 3: once all players have fulfilled the room space, we should mark current gamePda account as full, and increase the counter of gameType account
+                    // // so that from next time from client side they can direct to next gamePda
+                    // // 2 main tasks occurs here: Updates last_game_index+=1 in game_type account
+                    // // transfers commission only when game room is full
+                    if full {
+                        msg!("You are inside Full");
+                        msg!(
+                            "Line 224: Current gametype.key {} Current gametype.last_game_index {}",
+                            gametype.key(),
+                            gametype.last_game_index
+                        );
 
-                    //     msg!("You are inside Full");
+                        // After entering third player: 3/3 == full
+                        // we have to update last_game_index
+                        // this will create a new gamePda from client side next time based on
 
-                    //     gametype.last_game_index += 1;
-                    //     gametype.last_game_index_to_string = gametype.last_game_index.to_string();
-                    //     let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
-                    //     let now_ts = Clock::get().unwrap().unix_timestamp;
-                    //     let random = now_ts % 1000 + 1;
-                    //     let players_funds = 3 * entryprice * 9 / 10;
-                    //     let players_funds = 3 * entryprice * 9 / 10;
-                    //     msg!(" L======>133");
-                    //     if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
-                    //         game.rm = 50;
-                    //     } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
-                    //         game.rm = 10;
-                    //     } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
-                    //         game.rm = 5;
-                    //     } else if random > 690 && treasury_funds >= players_funds * 3 {
-                    //         game.rm = 3;
-                    //     } else {
-                    //         game.rm = 2;
-                    //     }
-                    //     msg!(" L======>145");
-                    //     let final_reward = entryprice * (game.rm as u64);
-                    //     let (game_pda, game_seed) = Pubkey::find_program_address(
-                    //         &[
-                    //             b"GAME".as_ref(),
-                    //             gametype.last_game_index_to_string.as_ref(),
-                    //         ],
-                    //         ctx.program_id,
-                    //     );
+                        gametype.last_game_index += 1; // here is the update that we are looking at.
 
-                    //     let comission = entryprice * 3 / 10;
+                        gametype.last_game_index_to_string = gametype.last_game_index.to_string(); // string type
 
-                    //     // invoke_signed(
-                    //     //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
-                    //     //     &[
-                    //     //         ctx.accounts.global_treasury_pda.to_account_info(),
-                    //     //         ctx.accounts.game_pda.to_account_info(),
-                    //     //         ctx.accounts.system_program.to_account_info()
-                    //     //     ],
-                    //     //     &[&["Treasury".as_ref(),
-                    //     //         &[bump_seed],
-                    //     //     ]],
-                    //     // )?;
-                    //     msg!(" L======>162");
-                    //     invoke_signed(
-                    //         &system_instruction::transfer(
-                    //             &game_pda.key(),
-                    //             &solem_inc_pk,
-                    //             comission,
-                    //         ),
-                    //         &[
-                    //             ctx.accounts.game_pda.to_account_info(),
-                    //             ctx.accounts.solem_inc.to_account_info(),
-                    //             ctx.accounts.system_program.to_account_info(),
-                    //         ],
-                    //         &[&[
-                    //             "GAME".as_ref(),
-                    //             gametype.last_game_index_to_string.as_ref(),
-                    //             &[game_seed],
-                    //         ]],
-                    //     )?;
-                    //     msg!(" L======>174");
-                    // }
+                        // not required
+                        // let treasury_funds = ctx.accounts.game_treasury_pda.lamports(); // In case of game_treasury_pda, which we are no more using.
+
+                        msg!("Line 248: Below logic is only for setting up game reward multiplicator");
+                        // let treasury_funds = ctx.accounts.game_pda.to_account_info().lamports.borrow(); // donator_program_account.to_account_info().try_borrow_mut_lamports()?
+
+                        // let now_ts = Clock::get().unwrap().unix_timestamp;
+                        // let random = now_ts % 1000 + 1;
+                        // let players_funds = 3 * entryprice * 9 / 10;
+
+                        // // Logic Implementation in Rust Issue: binary operation `>=` cannot be applied to type `Ref<'_, &mut u64>`rustcE0369
+                        // if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
+                        //     game.rm = 50;
+                        // } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
+                        //     game.rm = 10;
+                        // } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
+                        //     game.rm = 5;
+                        // } else if random > 690 && treasury_funds >= players_funds * 3 {
+                        //     game.rm = 3;
+                        // } else {
+                        //     game.rm = 2;
+                        // }
+
+                        // Hard coded rm value for the time being
+                        game.rm = 2;
+
+                        msg!(" L======>145");
+                        // let final_reward = entryprice * (game.rm as u64); // no more required to send to game_treasury_account;
+                        // already taken in game_pda account
+
+                        let gametype_previous_last_game_index = gametype.last_game_index - 1;
+                        let gametype_previous_last_game_index_string =
+                            gametype_previous_last_game_index.to_string();
+
+                        let (game_pda, game_seed) = Pubkey::find_program_address(
+                            &[
+                                b"GAME".as_ref(),
+                                // gametype.last_game_index_to_string.as_ref(),
+                                gametype_previous_last_game_index_string.as_ref(),
+                            ],
+                            ctx.program_id,
+                        );
+                        msg!("🚀 ~ file: lib.rs ~ line 286 ~ ifctx.accounts.player.lamports ~ game_seed {}", game_seed);
+                        msg!("🚀 ~ file: lib.rs ~ line 287 ~ ifctx.accounts.player.lamports ~ game_pda {}", game_pda);
+                        msg!("🚀 ~ file: lib.rs ~ line 288 ~ ifctx.accounts.player.lamports ~ gametype_previous_last_game_index_string {}", gametype_previous_last_game_index_string);
+
+                        let comission = entryprice * 3 / 10;
+
+                        // transfer final_reward from global_treasury_pda to game_pda // no more required
+                        // invoke_signed(
+                        //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
+                        //     &[
+                        //         ctx.accounts.global_treasury_pda.to_account_info(),
+                        //         ctx.accounts.game_pda.to_account_info(),
+                        //         ctx.accounts.system_program.to_account_info()
+                        //     ],
+                        //     &[&["Treasury".as_ref(),
+                        //         &[bump_seed],
+                        //     ]],
+                        // )?;
+                        msg!("Line 293: About to transfer commission to SolemInc");
+
+                        // // 'Program 11111111111111111111111111111111 invoke [2]', 'Transfer: `from` must not carry data', 'Program 11111111111111111111111111111111 failed: invalid program argument'
+                        // invoke_signed(
+                        //     &system_instruction::transfer(
+                        //         &game_pda.key(),
+                        //         &solem_inc_pk,
+                        //         comission,
+                        //     ),
+                        //     &[
+                        //         ctx.accounts.game_pda.to_account_info(),
+                        //         ctx.accounts.solem_inc.to_account_info(),
+                        //         ctx.accounts.system_program.to_account_info(),
+                        //     ],
+                        //     &[&[
+                        //         "GAME".as_ref(),
+                        //         // gametype.last_game_index_to_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                        //         gametype_previous_last_game_index_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                        //         &[game_seed],
+                        //     ]],
+                        // )?;
+                        msg!("Line 311, Commission transferred to solem inc only when game room is full");
+                    }
                 }
             }
         }
@@ -367,7 +401,6 @@ pub struct AddPlayer<'info> {
     // /// CHECK:
     // #[account(mut)]
     // pub game_treasury_pda: AccountInfo<'info>,
-
     #[account(mut)]
     pub authority: Signer<'info>,
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
@@ -376,7 +409,7 @@ pub struct AddPlayer<'info> {
     pub game_type: Account<'info, GameType>,
 
     #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
-    pub game_pda: Account<'info, Game>,
+    pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
     pub system_program: Program<'info, System>,
 }
