@@ -408,6 +408,7 @@ pub struct AddPlayer<'info> {
     #[account(mut)]
     pub game_type: Account<'info, GameType>,
 
+    // #[account(init,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)] // will break the code //  'Allocate: account Address { address: 6RM3NZ7BA1R1zw9ZvxyCyJvh3jgSmkLXJBfxN1XLJEfN, base: None } already in use'
     #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
