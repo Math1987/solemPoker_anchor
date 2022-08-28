@@ -219,77 +219,77 @@ pub mod codetest {
                     }
 
                     // phase 3: once all players have taken place we should mark current gamePda account as full
-                    if full {
-                        msg!(
-                            "l==========127 game key {} game last index {}",
-                            gametype.key(),
-                            gametype.last_game_index
-                        );
+                    // if full {
+                    //     msg!(
+                    //         "l==========127 game key {} game last index {}",
+                    //         gametype.key(),
+                    //         gametype.last_game_index
+                    //     );
 
-                        msg!("You are inside Full");
+                    //     msg!("You are inside Full");
 
-                        gametype.last_game_index += 1;
-                        gametype.last_game_index_to_string = gametype.last_game_index.to_string();
-                        let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
-                        let now_ts = Clock::get().unwrap().unix_timestamp;
-                        let random = now_ts % 1000 + 1;
-                        let players_funds = 3 * entryprice * 9 / 10;
-                        let players_funds = 3 * entryprice * 9 / 10;
-                        msg!(" L======>133");
-                        if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
-                            game.rm = 50;
-                        } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
-                            game.rm = 10;
-                        } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
-                            game.rm = 5;
-                        } else if random > 690 && treasury_funds >= players_funds * 3 {
-                            game.rm = 3;
-                        } else {
-                            game.rm = 2;
-                        }
-                        msg!(" L======>145");
-                        let final_reward = entryprice * (game.rm as u64);
-                        let (game_pda, game_seed) = Pubkey::find_program_address(
-                            &[
-                                b"GAME".as_ref(),
-                                gametype.last_game_index_to_string.as_ref(),
-                            ],
-                            ctx.program_id,
-                        );
+                    //     gametype.last_game_index += 1;
+                    //     gametype.last_game_index_to_string = gametype.last_game_index.to_string();
+                    //     let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
+                    //     let now_ts = Clock::get().unwrap().unix_timestamp;
+                    //     let random = now_ts % 1000 + 1;
+                    //     let players_funds = 3 * entryprice * 9 / 10;
+                    //     let players_funds = 3 * entryprice * 9 / 10;
+                    //     msg!(" L======>133");
+                    //     if random > 690 + 210 + 70 + 29 && treasury_funds >= players_funds * 50 {
+                    //         game.rm = 50;
+                    //     } else if random > 690 + 210 + 70 && treasury_funds >= players_funds * 10 {
+                    //         game.rm = 10;
+                    //     } else if random > 690 + 210 && treasury_funds >= players_funds * 5 {
+                    //         game.rm = 5;
+                    //     } else if random > 690 && treasury_funds >= players_funds * 3 {
+                    //         game.rm = 3;
+                    //     } else {
+                    //         game.rm = 2;
+                    //     }
+                    //     msg!(" L======>145");
+                    //     let final_reward = entryprice * (game.rm as u64);
+                    //     let (game_pda, game_seed) = Pubkey::find_program_address(
+                    //         &[
+                    //             b"GAME".as_ref(),
+                    //             gametype.last_game_index_to_string.as_ref(),
+                    //         ],
+                    //         ctx.program_id,
+                    //     );
 
-                        let comission = entryprice * 3 / 10;
+                    //     let comission = entryprice * 3 / 10;
 
-                        // invoke_signed(
-                        //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
-                        //     &[
-                        //         ctx.accounts.global_treasury_pda.to_account_info(),
-                        //         ctx.accounts.game_pda.to_account_info(),
-                        //         ctx.accounts.system_program.to_account_info()
-                        //     ],
-                        //     &[&["Treasury".as_ref(),
-                        //         &[bump_seed],
-                        //     ]],
-                        // )?;
-                        msg!(" L======>162");
-                        invoke_signed(
-                            &system_instruction::transfer(
-                                &game_pda.key(),
-                                &solem_inc_pk,
-                                comission,
-                            ),
-                            &[
-                                ctx.accounts.game_pda.to_account_info(),
-                                ctx.accounts.solem_inc.to_account_info(),
-                                ctx.accounts.system_program.to_account_info(),
-                            ],
-                            &[&[
-                                "GAME".as_ref(),
-                                gametype.last_game_index_to_string.as_ref(),
-                                &[game_seed],
-                            ]],
-                        )?;
-                        msg!(" L======>174");
-                    }
+                    //     // invoke_signed(
+                    //     //     &system_instruction::transfer(&global_treasury_pda, &game.key(), final_reward),
+                    //     //     &[
+                    //     //         ctx.accounts.global_treasury_pda.to_account_info(),
+                    //     //         ctx.accounts.game_pda.to_account_info(),
+                    //     //         ctx.accounts.system_program.to_account_info()
+                    //     //     ],
+                    //     //     &[&["Treasury".as_ref(),
+                    //     //         &[bump_seed],
+                    //     //     ]],
+                    //     // )?;
+                    //     msg!(" L======>162");
+                    //     invoke_signed(
+                    //         &system_instruction::transfer(
+                    //             &game_pda.key(),
+                    //             &solem_inc_pk,
+                    //             comission,
+                    //         ),
+                    //         &[
+                    //             ctx.accounts.game_pda.to_account_info(),
+                    //             ctx.accounts.solem_inc.to_account_info(),
+                    //             ctx.accounts.system_program.to_account_info(),
+                    //         ],
+                    //         &[&[
+                    //             "GAME".as_ref(),
+                    //             gametype.last_game_index_to_string.as_ref(),
+                    //             &[game_seed],
+                    //         ]],
+                    //     )?;
+                    //     msg!(" L======>174");
+                    // }
                 }
             }
         }
@@ -364,9 +364,9 @@ pub struct AddPlayer<'info> {
     #[account(mut)]
     pub solem_inc: AccountInfo<'info>,
 
-    /// CHECK:
-    #[account(mut)]
-    pub game_treasury_pda: AccountInfo<'info>,
+    // /// CHECK:
+    // #[account(mut)]
+    // pub game_treasury_pda: AccountInfo<'info>,
 
     #[account(mut)]
     pub authority: Signer<'info>,

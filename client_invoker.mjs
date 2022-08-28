@@ -37,6 +37,9 @@ async function main() {
   console.log("🚀 ~ file: client_invoker.mjs ~ line 37 ~ main ~ gameList", gameList.publicKey.toBase58());
   let gameType = anchor.web3.Keypair.generate();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 39 ~ main ~ gameType", gameType.publicKey.toBase58());
+
+  const solemInc = new anchor.web3.PublicKey("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb");
+
   // let player1=anchor.web3.Keypair.generate();
   let player1 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player1.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ player1", player1.publicKey.toBase58())
@@ -87,60 +90,29 @@ async function main() {
   confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
 
+
+  /*            AIRDROP_COMPLETE        */
+  console.log("Line 92: Airdrop Complete!")
+
   // create a data_account // this should be created only with the init method, and later should be saved
   // let data_account = anchor.web3.Keypair.generate();
   let data_account = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/data_account.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 35 ~ main ~ data_account", data_account.publicKey.toBase58());
 
-  // // derive a global gameListPda account
-  // let [gameListPda] = await anchor.web3.PublicKey.findProgramAddress(
-  //   [Buffer.from("GAME_LIST")],
-  //   CodetestProgram.programId
-  // );
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ gameListPda", gameListPda.toBase58());
-
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ provider.wallet.payer", provider.wallet.payer.publicKey.toBase58());
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ typeof(provider.wallet.payer)", typeof (provider.wallet.payer));
-
 
   // Invoking init Endpoint // required to invoke only one time
   let transaction_id = await CodetestProgram.methods
     .init()
     .accounts({
       server: provider.wallet.publicKey,
-      gameList: gameList.publicKey,
+      gameList: gameList.publicKey, // data account
       systemProgram: SystemProgram.programId
     })
     .signers([gameList])
     .rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ init transaction_id: ", transaction_id);
-
-  // // Fetching Data from gameListPda account => pub struct GameList == CodetestProgram.account.gameList
-  // let gameListPdaResult = await CodetestProgram.account.gameList.fetch(gameListPda);
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 61 ~ main ~ gameListPdaResult", gameListPdaResult);
-
-  // // Assigning last_game_index to a variable
-  // let last_game_index = gameListPdaResult.gameTypeIndex;
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 68 ~ main ~ last_game_index", last_game_index);
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 68 ~ main ~ typeof(last_game_index)", typeof (last_game_index));
-
-  // // Fetching data inside the data account => pub struct Data == CodetestProgram.account.data
-  // let data_accountResult = await CodetestProgram.account.data.fetch(data_account.publicKey);
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 73 ~ main ~ data_accountResult", data_accountResult);
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 73 ~ main ~ data_accountResult", data_accountResult.selectId);
-
-  // // derive a last_game_index specific gamePda account
-  // let [gamePda] = await anchor.web3.PublicKey.findProgramAddress(
-  //   [
-  //     Buffer.from("GAME_TYPE"),
-  //     // new Uint8Array(last_game_index) // // numeric type check - It's not working here
-  //     Buffer.from(last_game_index.toString()) // // hardcoded is working
-  //   ],
-  //   CodetestProgram.programId
-  // );
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gameListPda", gameListPda.toBase58());
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 88 ~ main ~ gamePda", gamePda.toBase58());
-
 
   // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
   transaction_id = await CodetestProgram.methods
@@ -148,148 +120,229 @@ async function main() {
     .accounts({
       gameList: gameList.publicKey,
       authority: provider.wallet.publicKey,
-      gameType: gameType.publicKey,
+      gameType: gameType.publicKey,   // data account
       systemProgram: SystemProgram.programId
     })
     .signers([gameType])
     .rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 102 ~ main ~ createGameType transaction_id", transaction_id);
 
-  // Fetching Data from gameType account => pub struct GameList == CodetestProgram.account.gameList
-  let gameTypeResult = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult", gameTypeResult);
-  console.log("====================>", gameTypeResult.lastGameIndex);
-  let last_game_index = gameTypeResult.lastGameIndex
-  // // gameListPda EJrpvgQEh7cVQ58H9WvXu3fmRw2TY3WG7Nj7XJtjPtsD
+
   // // gamePda with numeric type DZmAu2u9LtoXfUrhro3s4aTYpFsLPzjAJMEeDFMSaHMZ
   // // with "1" as hard coded string gamePda: 2K5s7K1Go45ThtQkRjXPeWnKTNVXyP5r5GSdrc6PRLAn
   // // authority GruSFAjP7gtmJ9k3SBAiCrMXyUByGJKR885MhKWM9KJD
 
-  // transaction_id = await CodetestProgram.methods
-  //   .createGameType(new BN(1 * LAMPORTS_PER_SOL), 3, 6)
-  //   .accounts({
-  //     gameList: gameList.publicKey,
-  //     authority: provider.wallet.publicKey,
-  //     gameType: gameType.publicKey,
-  //     systemProgram: SystemProgram.programId
-  //   })
-  //   .signers([gameType])
-  //   .rpc();
-  // console.log("🚀 ~ file: client_invoker.mjs ~ line 102 ~ main ~ createGameType transaction_id", transaction_id);
-  const solemInc = new anchor.web3.PublicKey("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb");
 
-  let [gamePda] = await anchor.web3.PublicKey.findProgramAddress(
+  /*
+
+  // Adding player 1
+
+  */
+
+  // Fetching Data from gameType data account => pub struct GameList == CodetestProgram.account.gameList
+  let gameTypeResult_for_P1 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult_for_P1", gameTypeResult_for_P1);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 162 ~ main ~ gameTypeResult_for_P1.lastGameIndex", gameTypeResult_for_P1.lastGameIndex);
+
+  let last_game_index_for_P1 = gameTypeResult_for_P1.lastGameIndex // this is required to chnage gamePda
+
+
+  // First Time GAME PDA Check
+  let [gamePda_P1] = await anchor.web3.PublicKey.findProgramAddress(
     [
       Buffer.from("GAME"),
       // new Uint8Array(last_game_index) // // numeric type check - It's not working here
-      Buffer.from(last_game_index.toString()) // // hardcoded is working
+      Buffer.from(last_game_index_for_P1.toString()) // // string is working
     ],
     CodetestProgram.programId
   );
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 139 ~ main ~ gamePda", gamePda.toBase58())
-  let [gameTreasuryPda] = await anchor.web3.PublicKey.findProgramAddress(
-    [
-      Buffer.from("Treasury"),
-    ],
-    CodetestProgram.programId
-  );
-  const tx = await CodetestProgram.methods.addPlayer().accounts({
+  console.log(`🚀 ~ file: client_invoker.mjs ~ line 191 ~ main ~ gamePda_P1: ${gamePda_P1.toBase58()}, last_game_index_for_P1: ${last_game_index_for_P1}`)
+
+  const tx_P1 = await CodetestProgram.methods.addPlayer().accounts({
     player: player1.publicKey,
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    gameTreasuryPda: gameTreasuryPda,
+    // gameTreasuryPda: gameTreasuryPda,
     gameType: gameType.publicKey,
-    gamePda: gamePda,
+    gamePda: gamePda_P1,
     systemProgram: SystemProgram.programId
   }).signers([player1]).rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx", tx)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
 
+  // After Player 1 is added check
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  let gamePdaResult = await CodetestProgram.account.game.fetch(gamePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 210 ~ main ~ P1 gamePdaResult", gamePdaResult);
+  let gamePda_P1_Result = await CodetestProgram.account.game.fetch(gamePda_P1);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 210 ~ main ~ P1 gamePda_P1_Result after update: ", gamePda_P1_Result);
 
-  const tx2 = await CodetestProgram.methods.addPlayer().accounts({
+
+  /*
+
+  // Adding player 2
+
+  */
+
+  // lastGameIndex isnt updated yet
+  // if full = true, lastGameIndex will be updated
+  let gameTypeResult_for_P2 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult_for_P2", gameTypeResult_for_P2);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 176 ~ main ~ gameTypeResult_for_P2.lastGameIndex", gameTypeResult_for_P2.lastGameIndex);
+
+  let last_game_index_for_P2 = gameTypeResult_for_P2.lastGameIndex
+
+  // Second Time GAME PDA Check
+  let [gamePda_P2] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GAME"),
+      Buffer.from(last_game_index_for_P2.toString()) // // string is working
+    ],
+    CodetestProgram.programId
+  );
+  console.log(`🚀 ~ file: client_invoker.mjs ~ line 249 ~ main ~ gamePda_P2: ${gamePda_P2.toBase58()}, last_game_index_for_P2: ${last_game_index_for_P2}`)
+
+  const tx_P2 = await CodetestProgram.methods.addPlayer().accounts({
     player: player2.publicKey,
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    gameTreasuryPda: gameTreasuryPda,
+    // gameTreasuryPda: gameTreasuryPda,
     gameType: gameType.publicKey,
-    gamePda: gamePda,
+    gamePda: gamePda_P2,
     systemProgram: SystemProgram.programId
   }).signers([player2]).rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 173 ~ tx2 ~ tx2", tx2)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 200 ~ consttx_P2=awaitCodetestProgram.methods.addPlayer ~ tx_P2", tx_P2);
 
+  // After Player 2 is added check
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  gamePdaResult = await CodetestProgram.account.game.fetch(gamePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 226 ~ main ~ P2 gamePdaResult", gamePdaResult);
+  let gamePda_P2_Result = await CodetestProgram.account.game.fetch(gamePda_P2);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 205 ~ main ~ gamePda_P2_Result after update:", gamePda_P2_Result);
 
-  const tx3 = await CodetestProgram.methods.addPlayer().accounts({
+  /*
+
+  // Adding player 3
+
+  */
+
+  // lastGameIndex isnt updated yet
+  // if full = true, lastGameIndex will be updated
+  let gameTypeResult_for_P3 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult_for_P3", gameTypeResult_for_P3);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 212 ~ main ~ gameTypeResult_for_P3.lastGameIndex", gameTypeResult_for_P3.lastGameIndex);
+
+  let last_game_index_for_P3 = gameTypeResult_for_P3.lastGameIndex
+
+  // Third Time GAME PDA Check
+  let [gamePda_P3] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GAME"),
+      Buffer.from(last_game_index_for_P3.toString()) // // string is working
+    ],
+    CodetestProgram.programId
+  );
+  console.log(`🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gamePda_P3: ${gamePda_P3.toBase58()}, last_game_index_for_P3: ${last_game_index_for_P3}`)
+
+
+  const tx_P3 = await CodetestProgram.methods.addPlayer().accounts({
     player: player3.publicKey,
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    gameTreasuryPda: gameTreasuryPda,
+    // gameTreasuryPda: gameTreasuryPda,
     gameType: gameType.publicKey,
-    gamePda: gamePda,
+    gamePda: gamePda_P3,
     systemProgram: SystemProgram.programId
   }).signers([player3]).rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 184 ~ tx3 ~ tx3", tx3)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 236 ~ consttx_P3=awaitCodetestProgram.methods.addPlayer ~ tx_P3", tx_P3);
 
+  // After Player 3 is added check
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  gamePdaResult = await CodetestProgram.account.game.fetch(gamePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 226 ~ main ~ P3 gamePdaResult", gamePdaResult);
+  let gamePda_P3_Result = await CodetestProgram.account.game.fetch(gamePda_P3);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 241 ~ main ~ gamePda_P3_Result", gamePda_P3_Result);
 
+
+  /*
+
+  // Adding player 4
+
+  */
 
   // lastGameIndex isnt updated yet
   // if full = true, lastGameIndex will be updated
-  gameTypeResult = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult", gameTypeResult);
-  console.log("====================>", gameTypeResult.lastGameIndex);
-  last_game_index = gameTypeResult.lastGameIndex
-  [gamePda] = await anchor.web3.PublicKey.findProgramAddress(
+  let gameTypeResult_for_P4 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult_for_P4", gameTypeResult_for_P4);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 249 ~ main ~ gameTypeResult_for_P4.lastGameIndex", gameTypeResult_for_P4.lastGameIndex);
+
+  let last_game_index_for_P4 = gameTypeResult_for_P4.lastGameIndex
+
+  // Forth Time GAME PDA Check
+  let [gamePda_P4] = await anchor.web3.PublicKey.findProgramAddress(
     [
       Buffer.from("GAME"),
-      Buffer.from(last_game_index.toString()) // // hardcoded is working
+      Buffer.from(last_game_index_for_P4.toString()) // // string is working
     ],
     CodetestProgram.programId
   );
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 139 ~ main ~ gamePda", gamePda.toBase58())
+  console.log(`🚀 ~ file: client_invoker.mjs ~ line 314 ~ main ~ gamePda_P4: ${gamePda_P4.toBase58()}, last_game_index_for_P4: ${last_game_index_for_P4}`)
 
-
-  const tx4 = await CodetestProgram.methods.addPlayer().accounts({
+  const tx_P4 = await CodetestProgram.methods.addPlayer().accounts({
     player: player4.publicKey,
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    gameTreasuryPda: gameTreasuryPda,
+    // gameTreasuryPda: gameTreasuryPda,
     gameType: gameType.publicKey,
-    gamePda: gamePda,  // client side is sending the new game PDA
+    gamePda: gamePda_P4,  // client side is sending the new game PDA
     systemProgram: SystemProgram.programId
   }).signers([player4]).rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 195 ~ tx4 ~ tx4", tx4)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 272 ~ consttx_P4=awaitCodetestProgram.methods.addPlayer ~ tx_P4", tx_P4);
 
+  // After Player 4 is added check
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  gamePdaResult = await CodetestProgram.account.game.fetch(gamePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 226 ~ main ~ P4 gamePdaResult", gamePdaResult);
+  let gamePda_P4_Result = await CodetestProgram.account.game.fetch(gamePda_P4);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 276 ~ main ~ gamePda_P4_Result", gamePda_P4_Result);
 
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 199~ main ~ gameTypeResult", gameTypeResult);
-  const tx5 = await CodetestProgram.methods.addPlayer().accounts({
+
+  /*
+
+  // Adding player 5
+
+  */
+
+  // lastGameIndex isnt updated yet
+  // if full = true, lastGameIndex will be updated
+  let gameTypeResult_for_P5 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P5", gameTypeResult_for_P5);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P5.lastGameIndex", gameTypeResult_for_P5.lastGameIndex);
+
+  let last_game_index_for_P5 = gameTypeResult_for_P5.lastGameIndex
+
+  // Fifth Time GAME PDA Check
+  let [gamePda_P5] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GAME"),
+      Buffer.from(last_game_index_for_P5.toString()) // // string is working
+    ],
+    CodetestProgram.programId
+  );
+  console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P5: ${gamePda_P5.toBase58()}, last_game_index_for_P5: ${last_game_index_for_P5}`)
+
+
+  const tx_P5 = await CodetestProgram.methods.addPlayer().accounts({
     player: player5.publicKey,
     gameList: gameList.publicKey,
     solemInc: solemInc,
     authority: provider.wallet.publicKey,
-    gameTreasuryPda: gameTreasuryPda,
+    // gameTreasuryPda: gameTreasuryPda,
     gameType: gameType.publicKey,
-    gamePda: gamePda,
+    gamePda: gamePda_P5,
     systemProgram: SystemProgram.programId
   }).signers([player5]).rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 213 ~ tx5 ~ tx5", tx5)
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
 
+  // After Player 5 is added check
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  gamePdaResult = await CodetestProgram.account.game.fetch(gamePda);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 226 ~ main ~ P5 gamePdaResult", gamePdaResult);
+  let gamePda_P5_Result = await CodetestProgram.account.game.fetch(gamePda_P5);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
 
 }
 
