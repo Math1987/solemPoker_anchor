@@ -126,9 +126,9 @@ async function main() {
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ provider.wallet.payer", provider.wallet.payer.publicKey.toBase58());
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ typeof(provider.wallet.payer)", typeof (provider.wallet.payer));
 
-  // Invoking init Endpoint // required to invoke only one time
+  // Invoking initGamelistAccount Endpoint // required to invoke only one time
   let transaction_id = await CodetestProgram.methods
-    .init()
+    .initGamelistAccount()
     .accounts({
       server: provider.wallet.publicKey,
       gameList: gameList.publicKey, // data account
@@ -136,7 +136,7 @@ async function main() {
     })
     .signers([gameList])
     .rpc();
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ init transaction_id: ", transaction_id);
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ initGamelistAccount transaction_id: ", transaction_id);
 
   let entry_fee_client = 0.01;
   let max_games_available_in_game_type = 3;

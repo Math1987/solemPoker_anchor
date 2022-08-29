@@ -10,9 +10,9 @@ declare_id!("AxmxjMWgQcMQRCbT6oF4PMhJfNGY9YnWNZcm4TowE3H9");
 pub mod codetest {
     use super::*;
 
-    pub fn init(ctx: Context<Init>) -> Result<()> {
+    pub fn init_gamelist_account(ctx: Context<InitGamelistAccount>) -> Result<()> {
         msg!(" L======>16");
-        let mut gamelist = &mut ctx.accounts.game_list;
+        let gamelist = &mut ctx.accounts.game_list;
         gamelist.game_type_index = 1;
         //gamelist.game_type_index_to_string=gamelist.game_type_index.to_string();
         //ctx.accounts.data.select_id=0;
@@ -91,11 +91,11 @@ pub mod codetest {
         // why < ?   and not ===>     <=
         // because the third player is entering using this instruction
         // that means the current game.Players.len() should be < gametype.max_player
-        if game.Players.len() < gametype.max_player as usize {
+        if game.players.len() < gametype.max_player as usize {
             if ctx.accounts.player.lamports() >= entryprice {
                 msg!(" L======>67 lamports greater then required");
 
-                if game.Players.len() == 0 {
+                if game.players.len() == 0 {
                     msg!("L======>63 setting reward multiplicator as 0 when there are no players in the vector");
                     game.rm = 0; // setting reward multiplicator as 0
                 }
@@ -117,14 +117,14 @@ pub mod codetest {
                 // total 3 players:  => i=0;1;2; (total 3 times)
                 loop {
                     msg!("L======>72 duplicate entry player check loop");
-                    if i < game.Players.len() {
+                    if i < game.players.len() {
                         msg!(
                             "🚀 ~ file: lib.rs ~ line 115 ~ if i<game.Players.len ~ i {}",
                             i
                         );
-                        msg!("🚀 ~ file: lib.rs ~ line 115 ~ if i<game.Players.len ~ game.Players.len() current players in room: {}", game.Players.len());
+                        msg!("🚀 ~ file: lib.rs ~ line 115 ~ if i<game.Players.len ~ game.Players.len() current players in room: {}", game.players.len());
 
-                        if game.Players[i].to_string() == ctx.accounts.player.key.to_string() {
+                        if game.players[i].to_string() == ctx.accounts.player.key.to_string() {
                             msg!("Line 199: In this case the all players in room will be checked with current player passed, and match found here");
                             msg!("Line 120: Cannot add this player, terminating the instruction!");
 
@@ -143,12 +143,12 @@ pub mod codetest {
                     msg!("Line 137: we are inside can_add phase, which is second phase");
                     msg!(
                         "<----game.Players.len()----> l====103==={}",
-                        game.Players.len()
+                        game.players.len()
                     );
                     let mut pre_add_state: usize = 0; // by default we are saying that there are no players in gamePda
                     let mut post_add_state: usize = 0;
 
-                    pre_add_state = game.Players.len(); //pre add
+                    pre_add_state = game.players.len(); //pre add
                     msg!("🚀 ~ file: lib.rs ~ line 146 ~ ifctx.accounts.player.lamports ~ pre_add_state {}", pre_add_state);
 
                     // added player public key in game.players
@@ -161,8 +161,8 @@ pub mod codetest {
                         // because when pre_add_state 3==3, we'll be inside a new gamePda
                         msg!("Line 155: same gamePda (for 1,2,3 player), pre_add_state < gametype.max_player");
 
-                        game.Players.push(ctx.accounts.player.key()); // 1st,2nd,3rd player
-                        post_add_state = game.Players.len(); // In case of 3 players added, this value will be == 3
+                        game.players.push(ctx.accounts.player.key()); // 1st,2nd,3rd player
+                        post_add_state = game.players.len(); // In case of 3 players added, this value will be == 3
                         msg!("🚀 ~ file: lib.rs ~ line 159 ~ ifctx.accounts.player.lamports ~ post_add_state == game.Players.len() Your player is been successfully added: {}", post_add_state);
                         msg!("🚀 ~ file: lib.rs ~ line 160 ~ ifctx.accounts.player.lamports ~ pre_add_state Your player is been successfully added: {}", pre_add_state);
 
@@ -192,7 +192,7 @@ pub mod codetest {
                     ); // full status
                     msg!("🚀 ~ file: lib.rs ~ line 186 ~ if ctx.accounts.player.lamports ~ gametype.max_player {}", gametype.max_player); // max_players in game
 
-                    post_add_state = game.Players.len(); // In case of 3 players added, this value will be == 3 // repeated for convenience
+                    post_add_state = game.players.len(); // In case of 3 players added, this value will be == 3 // repeated for convenience
                     msg!("🚀 ~ file: lib.rs ~ line 185 ~ ifctx.accounts.player.lamports ~ post_add_state {}", post_add_state);
                     if post_add_state as usize == (gametype.max_player) as usize {
                         // >=   ===>  ==
@@ -211,7 +211,7 @@ pub mod codetest {
                         msg!(
                             "Line 205: game key {} game struct game.Players {:#?}",
                             game.key(),
-                            game.Players
+                            game.players
                         );
                     } else {
                         msg!(
@@ -353,7 +353,7 @@ pub mod codetest {
 
 // }
 #[derive(Accounts)]
-pub struct Init<'info> {
+pub struct InitGamelistAccount<'info> {
     #[account(mut)]
     pub server: Signer<'info>,
     //#[account(init,payer = server,space = 10000,seeds = [b"GAME_LIST".as_ref()],bump)]
@@ -376,10 +376,10 @@ pub struct CreateGameType<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
-    // #[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
-    //#[account(init,payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // hardcoded is working
-    #[account(init,payer = authority, space = 9000)]
+    // #[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
+    // #[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded is working
+    //#[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // hardcoded is working
+    #[account(init, payer = authority, space = 9000)]
     pub game_type: Account<'info, GameType>,
 
     pub system_program: Program<'info, System>,
@@ -484,7 +484,7 @@ pub struct GameType {
 #[derive(Default)]
 pub struct Game {
     pub game_type: Pubkey,
-    pub Players: Vec<Pubkey>,
+    pub players: Vec<Pubkey>,
     pub winner: Pubkey,
     pub rm: u8,
     pub status: bool,

@@ -160,11 +160,11 @@ describe("Codetest", async () => {
   });
 
 
-  it("init method!", async () => {
-    // Invoking init Endpoint // required to invoke only one time
-    console.log("🚀 ~ file: Codetest.ts ~ line 129 ~ it ~ Invoking init Endpoint");
+  it("initGamelistAccount method!", async () => {
+    // Invoking initGamelistAccount Endpoint // required to invoke only one time
+    console.log("🚀 ~ file: Codetest.ts ~ line 129 ~ it ~ Invoking initGamelistAccount Endpoint");
     let transaction_id = await CodetestProgram.methods
-      .init()
+      .initGamelistAccount()
       .accounts({
         server: provider.wallet.publicKey,
         gameList: gameList.publicKey, // data account
@@ -172,7 +172,7 @@ describe("Codetest", async () => {
       })
       .signers([gameList])
       .rpc();
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ init transaction_id: ", transaction_id);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ initGamelistAccount transaction_id: ", transaction_id);
 
   });
 
