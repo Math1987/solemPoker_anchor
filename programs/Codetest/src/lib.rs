@@ -55,7 +55,8 @@ pub mod codetest {
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()> {
         msg!("Line 56: we are inside add_player");
 
-        let (global_treasury_pda, global_treasury_pda_bump_seed) = Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id ); // this is used only for transferring commission to solemInc
+        let (global_treasury_pda, global_treasury_pda_bump_seed) =
+            Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id); // this is used only for transferring commission to solemInc
         let solem_inc_pk =
             Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
 
@@ -247,7 +248,6 @@ pub mod codetest {
                         // let treasury_funds = ctx.accounts.game_pda.to_account_info().lamports.borrow(); // donator_program_account.to_account_info().try_borrow_mut_lamports()?
                         let treasury_funds = globaltreasury.lamports(); // In case of game_treasury_pda // // let treasury_funds = ctx.accounts.game_treasury_pda.lamports();
 
-
                         let now_ts = Clock::get().unwrap().unix_timestamp;
                         let random = now_ts % 1000 + 1;
                         let players_funds = 3 * entryprice * 9 / 10;
@@ -398,7 +398,7 @@ pub struct AddPlayer<'info> {
 
     /// CHECK:
     #[account(mut)]
-    pub global_treasury_pda : AccountInfo<'info>, // since we want to use .lamports() method
+    pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
 
     /// CHECK:
     #[account(mut)]

@@ -5,10 +5,14 @@ skip-lint = false
 [programs.localnet]
 codetest = "AxmxjMWgQcMQRCbT6oF4PMhJfNGY9YnWNZcm4TowE3H9"
 
+[programs.devnet]
+codetest = "AxmxjMWgQcMQRCbT6oF4PMhJfNGY9YnWNZcm4TowE3H9"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
+# cluster = "devnet"
 cluster = "localnet"
 wallet = "/home/imentus/.config/solana/id.json"
 

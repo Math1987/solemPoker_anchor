@@ -1,5 +1,5 @@
 import * as anchor from '@project-serum/anchor'
-import { Connection, PublicKey, Keypair, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { Connection, PublicKey, Keypair, SystemProgram, LAMPORTS_PER_SOL, ComputeBudgetProgram } from '@solana/web3.js'
 
 import { BN } from 'bn.js'
 
@@ -19,7 +19,8 @@ async function main() {
   // let connection = new Connection("http://127.0.0.1:8899");
   // let wallet = Keypair.fromSecretKey(new Uint8Array([174,43,21,124,235,242,183,95,89,171,100,127,116,183,210,163,62,17,158,201,65,188,108,8,115,61,176,91,62,135,167,250,118,94,241,20,85,34,25,213,153,93,160,113,100,20,36,164,213,160,146,24,173,202,35,132,251,152,207,201,46,251,197,14]))
 
-  const provider = anchor.AnchorProvider.local();                     // way 01 : local solana config get
+  const provider = anchor.AnchorProvider.local(); // In case of localhost                     // way 01 : local solana config get
+  // const provider = anchor.AnchorProvider.local("https://api.devnet.solana.com");        // In case of devnet             // way 01 : local solana config get
   // const provider = anchor.AnchorProvider.env();                    // way 02 : using a .env file
   // const provider = new anchor.AnchorProvider(connection, wallet )  // way 03`: Hardcoding the details for provider here itself
 
@@ -38,14 +39,14 @@ async function main() {
   let gameType = anchor.web3.Keypair.generate();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 39 ~ main ~ gameType", gameType.publicKey.toBase58());
 
-    // Derive globalTresuryPda // this is used only for transferring commission to solemInc
-    let [globalTreasuryPda] = await anchor.web3.PublicKey.findProgramAddress(
-      [
-        Buffer.from("GlobalTreasury"),
-      ],
-      CodetestProgram.programId
-    );
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 48 ~ main ~ globalTreasuryPda", globalTreasuryPda.toBase58());
+  // Derive globalTresuryPda // this is used only for transferring commission to solemInc
+  let [globalTreasuryPda] = await anchor.web3.PublicKey.findProgramAddress(
+    [
+      Buffer.from("GlobalTreasury"),
+    ],
+    CodetestProgram.programId
+  );
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 48 ~ main ~ globalTreasuryPda", globalTreasuryPda.toBase58());
 
   const solemInc = new anchor.web3.PublicKey("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb");
 
@@ -53,52 +54,66 @@ async function main() {
   let player1 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player1.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ player1", player1.publicKey.toBase58())
 
-  let airdrop_tx_id = await provider.connection.requestAirdrop(player1.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-  let latestBlockhash = await provider.connection.getLatestBlockhash();
-  let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // // airdrop for localhost only
+  if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+    let airdrop_tx_id = await provider.connection.requestAirdrop(player1.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+    let latestBlockhash = await provider.connection.getLatestBlockhash();
+    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  }
 
   // let player2=anchor.web3.Keypair.generate();
   let player2 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player2.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 43 ~ main ~ player2", player2.publicKey.toBase58())
 
-  airdrop_tx_id = await provider.connection.requestAirdrop(player2.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-  latestBlockhash = await provider.connection.getLatestBlockhash();
-  confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // // airdrop for localhost only
+  if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+    let airdrop_tx_id = await provider.connection.requestAirdrop(player2.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+    let latestBlockhash = await provider.connection.getLatestBlockhash();
+    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  }
 
   // let player3=anchor.web3.Keypair.generate();
   let player3 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player3.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 45 ~ main ~ player3", player3.publicKey.toBase58())
 
-  airdrop_tx_id = await provider.connection.requestAirdrop(player3.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-  latestBlockhash = await provider.connection.getLatestBlockhash();
-  confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // // airdrop for localhost only
+  if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+    let airdrop_tx_id = await provider.connection.requestAirdrop(player3.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+    let latestBlockhash = await provider.connection.getLatestBlockhash();
+    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  }
 
   // let player4=anchor.web3.Keypair.generate();
   let player4 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player4.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ player4", player4.publicKey.toBase58())
 
-  airdrop_tx_id = await provider.connection.requestAirdrop(player4.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-  latestBlockhash = await provider.connection.getLatestBlockhash();
-  confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // // airdrop for localhost only
+  if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+    let airdrop_tx_id = await provider.connection.requestAirdrop(player4.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+    let latestBlockhash = await provider.connection.getLatestBlockhash();
+    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  }
 
   // let player5=anchor.web3.Keypair.generate();
   let player5 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player5.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 49 ~ main ~ player5", player5.publicKey.toBase58())
 
-  airdrop_tx_id = await provider.connection.requestAirdrop(player5.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-  latestBlockhash = await provider.connection.getLatestBlockhash();
-  confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-
+  // // airdrop for localhost only
+  if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+    let airdrop_tx_id = await provider.connection.requestAirdrop(player5.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+    let latestBlockhash = await provider.connection.getLatestBlockhash();
+    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  }
 
   /*            AIRDROP_COMPLETE        */
   console.log("Line 92: Airdrop Complete!")
@@ -123,9 +138,12 @@ async function main() {
     .rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 42 ~ main ~ init transaction_id: ", transaction_id);
 
+  let entry_fee_client = 0.01;
+  let max_games_available_in_game_type = 3;
+  let max_players_in_game_client = 3;
   // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
   transaction_id = await CodetestProgram.methods
-    .createGameType(new BN(1 * LAMPORTS_PER_SOL), 3, 3)
+    .createGameType(new BN(entry_fee_client * LAMPORTS_PER_SOL), max_games_available_in_game_type, max_players_in_game_client)
     .accounts({
       gameList: gameList.publicKey,
       authority: provider.wallet.publicKey,
@@ -167,6 +185,12 @@ async function main() {
   );
   console.log(`🚀 ~ file: client_invoker.mjs ~ line 191 ~ main ~ gamePda_P1: ${gamePda_P1.toBase58()}, last_game_index_for_P1: ${last_game_index_for_P1}`)
 
+  // default compute budget == 200_000 // addPlayer for 3rd player or the player that fulls the room takes compute units more than 200_000
+  const additionalComputeBudgetInstruction = ComputeBudgetProgram.requestUnits({
+    units: 400000,
+    additionalFee: 0,
+  });
+
   const tx_P1 = await CodetestProgram.methods.addPlayer().accounts({
     player: player1.publicKey,
     gameList: gameList.publicKey,
@@ -176,7 +200,7 @@ async function main() {
     gameType: gameType.publicKey,
     gamePda: gamePda_P1,
     systemProgram: SystemProgram.programId
-  }).signers([player1]).rpc();
+  }).signers([player1]).preInstructions([additionalComputeBudgetInstruction]).rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
 
   // After Player 1 is added check
@@ -218,7 +242,7 @@ async function main() {
     gameType: gameType.publicKey,
     gamePda: gamePda_P2,
     systemProgram: SystemProgram.programId
-  }).signers([player2]).rpc();
+  }).signers([player2]).preInstructions([additionalComputeBudgetInstruction]).rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 200 ~ consttx_P2=awaitCodetestProgram.methods.addPlayer ~ tx_P2", tx_P2);
 
   // After Player 2 is added check
@@ -260,7 +284,7 @@ async function main() {
     gameType: gameType.publicKey,
     gamePda: gamePda_P3,
     systemProgram: SystemProgram.programId
-  }).signers([player3]).rpc();
+  }).signers([player3]).preInstructions([additionalComputeBudgetInstruction]).rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 236 ~ consttx_P3=awaitCodetestProgram.methods.addPlayer ~ tx_P3", tx_P3);
 
   // After Player 3 is added check
@@ -302,7 +326,7 @@ async function main() {
     gameType: gameType.publicKey,
     gamePda: gamePda_P4,  // client side is sending the new game PDA
     systemProgram: SystemProgram.programId
-  }).signers([player4]).rpc();
+  }).signers([player4]).preInstructions([additionalComputeBudgetInstruction]).rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 272 ~ consttx_P4=awaitCodetestProgram.methods.addPlayer ~ tx_P4", tx_P4);
 
   // After Player 4 is added check
@@ -345,7 +369,7 @@ async function main() {
     gameType: gameType.publicKey,
     gamePda: gamePda_P5,
     systemProgram: SystemProgram.programId
-  }).signers([player5]).rpc();
+  }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
   console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
 
   // After Player 5 is added check
