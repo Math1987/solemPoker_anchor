@@ -14,9 +14,37 @@ import fs from "fs"
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Configure the client to use the local cluster.
+const provider = anchor.AnchorProvider.local(); // localhost
+// const provider = anchor.AnchorProvider.local("https://api.devnet.solana.com");        // In case of devnet             // way 01 : local solana config get
+
+
+// function airdrop_localhost(player_publickey_string: string) {
+//   provider.connection.requestAirdrop(new PublicKey(player_publickey_string), anchor.web3.LAMPORTS_PER_SOL)
+//     .then((airdrop_tx_id) => {
+//       console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id)
+//       provider.connection.getLatestBlockhash()
+//         .then((latestBlockhash) => {
+//           provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash })
+//             .then((confirmation_response) => {
+//               console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response)
+//             });
+//         });
+//     });
+// }
+
+function airdrop_localhost(player_publickey_string: string) {
+  provider.connection.requestAirdrop(new PublicKey(player_publickey_string), anchor.web3.LAMPORTS_PER_SOL)
+    .then(async (airdrop_tx_id) => {
+      console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+      let latestBlockhash = await provider.connection.getLatestBlockhash();
+      let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+      console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+    });
+}
+
 describe("Codetest", async () => {
-  // Configure the client to use the local cluster.
-  const provider = anchor.AnchorProvider.local();
+
   console.log("🚀 ~ file: client_invoker.mjs ~ line 12 ~ main ~ provider connection", provider.connection.rpcEndpoint);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 12 ~ main ~ provider wallet", provider.wallet.publicKey.toBase58());
   anchor.setProvider(provider);
@@ -46,66 +74,73 @@ describe("Codetest", async () => {
   let player1 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player1.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ player1", player1.publicKey.toBase58())
 
-  // // airdrop for localhost only
-  if (provider.connection.rpcEndpoint == "http://localhost:8899") {
-    let airdrop_tx_id = await provider.connection.requestAirdrop(player1.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-    let latestBlockhash = await provider.connection.getLatestBlockhash();
-    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-  }
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player1.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
 
   // let player2=anchor.web3.Keypair.generate();
   let player2 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player2.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 43 ~ main ~ player2", player2.publicKey.toBase58())
 
-  // // airdrop for localhost only
-  if (provider.connection.rpcEndpoint == "http://localhost:8899") {
-    let airdrop_tx_id = await provider.connection.requestAirdrop(player2.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-    let latestBlockhash = await provider.connection.getLatestBlockhash();
-    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-  }
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player2.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
 
   // let player3=anchor.web3.Keypair.generate();
   let player3 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player3.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 45 ~ main ~ player3", player3.publicKey.toBase58())
 
-  // // airdrop for localhost only
-  if (provider.connection.rpcEndpoint == "http://localhost:8899") {
-    let airdrop_tx_id = await provider.connection.requestAirdrop(player3.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-    let latestBlockhash = await provider.connection.getLatestBlockhash();
-    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-  }
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player3.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
 
   // let player4=anchor.web3.Keypair.generate();
   let player4 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player4.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ player4", player4.publicKey.toBase58())
 
-  // // airdrop for localhost only
-  if (provider.connection.rpcEndpoint == "http://localhost:8899") {
-    let airdrop_tx_id = await provider.connection.requestAirdrop(player4.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-    let latestBlockhash = await provider.connection.getLatestBlockhash();
-    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-  }
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player4.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
 
   // let player5=anchor.web3.Keypair.generate();
   let player5 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player5.json").toString())))
   console.log("🚀 ~ file: client_invoker.mjs ~ line 49 ~ main ~ player5", player5.publicKey.toBase58())
 
-  // // airdrop for localhost only
-  if (provider.connection.rpcEndpoint == "http://localhost:8899") {
-    let airdrop_tx_id = await provider.connection.requestAirdrop(player5.publicKey, anchor.web3.LAMPORTS_PER_SOL);
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
-    let latestBlockhash = await provider.connection.getLatestBlockhash();
-    let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
-    console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
-  }
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player5.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
+
+  // synchronous airdrop
+  airdrop_localhost(player1.publicKey.toBase58());
+  airdrop_localhost(player2.publicKey.toBase58());
+  airdrop_localhost(player3.publicKey.toBase58());
+  airdrop_localhost(player4.publicKey.toBase58());
+  airdrop_localhost(player5.publicKey.toBase58());
 
   /*            AIRDROP_COMPLETE        */
   console.log("Line 92: Airdrop Complete!")
@@ -394,3 +429,4 @@ describe("Codetest", async () => {
   });
 
 });
+
