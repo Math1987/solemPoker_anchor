@@ -20,6 +20,7 @@ pub mod codetest {
         gamelist.list = Vec::new();
         Ok(())
     }
+    
     pub fn create_game_type(
         ctx: Context<CreateGameType>,
         entry_price: u64,
