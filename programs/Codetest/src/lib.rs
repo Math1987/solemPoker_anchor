@@ -598,7 +598,8 @@ pub struct EndGame<'info> {
     #[account(mut)]
     pub game_type: Account<'info, GameType>,
 
-    #[account(mut,has_one=authority, seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    // #[account(mut,has_one=authority, seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    #[account(mut, has_one = authority)] // the seed check constraints are removed here because the winner would not always be available in lastgameindex + 1
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
     /// CHECK:
