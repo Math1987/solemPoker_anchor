@@ -178,7 +178,7 @@ describe("Codetest", async () => {
 
   it("createGameType method!", async () => {
     console.log("🚀 ~ file: Codetest.ts ~ line 129 ~ it ~ Invoking createGameType Endpoint");
-    let entry_fee_client = 0.01;
+    let entry_fee_client = 0.01; // In Sol
     let max_games_available_in_game_type = 3;
     let max_players_in_game_client = 3;
     // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
@@ -186,8 +186,8 @@ describe("Codetest", async () => {
       .createGameType(new BN(entry_fee_client * LAMPORTS_PER_SOL), max_games_available_in_game_type, max_players_in_game_client)
       .accounts({
         gameList: gameList.publicKey,
-        authority: provider.wallet.publicKey,
         gameType: gameType.publicKey,   // data account
+        authority: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId
       })
       .signers([gameType])
@@ -224,13 +224,13 @@ describe("Codetest", async () => {
     console.log(`🚀 ~ file: client_invoker.mjs ~ line 191 ~ main ~ gamePda_P1: ${gamePda_P1.toBase58()}, last_game_index_for_P1: ${last_game_index_for_P1}`)
 
     const tx_P1 = await CodetestProgram.methods.addPlayer().accounts({
-      player: player1.publicKey,
       gameList: gameList.publicKey,
-      solemInc: solemInc,
-      authority: provider.wallet.publicKey,
-      globalTreasuryPda: globalTreasuryPda,
       gameType: gameType.publicKey,
       gamePda: gamePda_P1,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player1.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player1]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
@@ -269,13 +269,13 @@ describe("Codetest", async () => {
     console.log(`🚀 ~ file: client_invoker.mjs ~ line 249 ~ main ~ gamePda_P2: ${gamePda_P2.toBase58()}, last_game_index_for_P2: ${last_game_index_for_P2}`)
 
     const tx_P2 = await CodetestProgram.methods.addPlayer().accounts({
-      player: player2.publicKey,
       gameList: gameList.publicKey,
-      solemInc: solemInc,
-      authority: provider.wallet.publicKey,
-      globalTreasuryPda: globalTreasuryPda,
       gameType: gameType.publicKey,
       gamePda: gamePda_P2,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player2.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player2]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 200 ~ consttx_P2=awaitCodetestProgram.methods.addPlayer ~ tx_P2", tx_P2);
@@ -315,13 +315,13 @@ describe("Codetest", async () => {
 
 
     const tx_P3 = await CodetestProgram.methods.addPlayer().accounts({
-      player: player3.publicKey,
       gameList: gameList.publicKey,
-      solemInc: solemInc,
-      authority: provider.wallet.publicKey,
-      globalTreasuryPda: globalTreasuryPda,
       gameType: gameType.publicKey,
       gamePda: gamePda_P3,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player3.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player3]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 236 ~ consttx_P3=awaitCodetestProgram.methods.addPlayer ~ tx_P3", tx_P3);
@@ -360,13 +360,13 @@ describe("Codetest", async () => {
     console.log(`🚀 ~ file: client_invoker.mjs ~ line 314 ~ main ~ gamePda_P4: ${gamePda_P4.toBase58()}, last_game_index_for_P4: ${last_game_index_for_P4}`)
 
     const tx_P4 = await CodetestProgram.methods.addPlayer().accounts({
-      player: player4.publicKey,
       gameList: gameList.publicKey,
-      solemInc: solemInc,
-      authority: provider.wallet.publicKey,
-      globalTreasuryPda: globalTreasuryPda,
       gameType: gameType.publicKey,
       gamePda: gamePda_P4,  // client side is sending the new game PDA
+      globalTreasuryPda: globalTreasuryPda,
+      player: player4.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player4]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 272 ~ consttx_P4=awaitCodetestProgram.methods.addPlayer ~ tx_P4", tx_P4);
@@ -406,13 +406,13 @@ describe("Codetest", async () => {
 
 
     const tx_P5 = await CodetestProgram.methods.addPlayer().accounts({
-      player: player5.publicKey,
       gameList: gameList.publicKey,
-      solemInc: solemInc,
-      authority: provider.wallet.publicKey,
-      globalTreasuryPda: globalTreasuryPda,
       gameType: gameType.publicKey,
       gamePda: gamePda_P5,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player5.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);

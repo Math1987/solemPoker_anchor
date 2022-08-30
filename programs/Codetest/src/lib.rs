@@ -500,6 +500,7 @@ pub mod codetest {
 pub struct InitGamelistAccount<'info> {
     #[account(mut)]
     pub server: Signer<'info>,
+
     //#[account(init,payer = server,space = 10000,seeds = [b"GAME_LIST".as_ref()],bump)]
     #[account(init, payer = server, space = 10000)]
     pub game_list: Account<'info, GameList>,
@@ -514,26 +515,20 @@ pub struct CreateGameType<'info> {
     #[account(mut)]
     pub game_list: Account<'info, GameList>,
 
-    // #[account(mut)]
-    // /// CHECK:
-    // pub game_treasury_pda : AccountInfo<'info>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-
     // #[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
     // #[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),b"1".as_ref()],bump)] // hardcoded string is working
     //#[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),game_list_pda.game_type_index_to_string.as_ref()],bump)] // string is working
     #[account(init, payer = authority, space = 9000)]
     pub game_type: Account<'info, GameType>,
 
+    #[account(mut)]
+    pub authority: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
 pub struct AddPlayer<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
     //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
     #[account(mut)]
     pub game_list: Account<'info, GameList>,
@@ -550,6 +545,9 @@ pub struct AddPlayer<'info> {
     /// CHECK:
     #[account(mut)]
     pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
+
+    #[account(mut)]
+    pub player: Signer<'info>,
 
     /// CHECK:
     #[account(mut)]
@@ -585,6 +583,7 @@ pub struct RemovePlayer<'info> {
     
     // #[account(mut)]
     // pub authority: Signer<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -605,19 +604,16 @@ pub struct EndGame<'info> {
     /// CHECK:
     #[account(mut)]
     pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
-
-    // #[account(mut)]
-    // pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>,
-
+    
     #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub winner: UncheckedAccount<'info>,
-
+    
     #[account(mut)]
     pub authority: Signer<'info>,
-    // #[account(mut, has_one = authority)]
-    // pub game : Account<'info, Game>
+    
+    pub system_program: Program<'info, System>,
+
 }
 
 #[account]
