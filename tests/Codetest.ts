@@ -135,12 +135,26 @@ describe("Codetest", async () => {
   //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
   // }
 
+  // let player6=anchor.web3.Keypair.generate();
+  let player6 = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/player6.json").toString())))
+  console.log("🚀 ~ file: client_invoker.mjs ~ line 49 ~ main ~ player6", player6.publicKey.toBase58())
+
+  // // // airdrop for localhost only
+  // if (provider.connection.rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(player6.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
+
   // synchronous airdrop
   airdrop_localhost(player1.publicKey.toBase58());
   airdrop_localhost(player2.publicKey.toBase58());
   airdrop_localhost(player3.publicKey.toBase58());
   airdrop_localhost(player4.publicKey.toBase58());
   airdrop_localhost(player5.publicKey.toBase58());
+  airdrop_localhost(player6.publicKey.toBase58());
 
   /*            AIRDROP_COMPLETE        */
   console.log("Line 92: Airdrop Complete!")
@@ -423,6 +437,202 @@ describe("Codetest", async () => {
     console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
 
     // Printing Balance of Global Treasury PDA
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("removePlayer method: For Removing Player 5", async () => {
+
+    /*
+  
+    // Removing recently added player 5
+  
+    */
+
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    let gameTypeResult_for_P5 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P5", gameTypeResult_for_P5);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P5.lastGameIndex", gameTypeResult_for_P5.lastGameIndex);
+
+    let last_game_index_for_P5 = gameTypeResult_for_P5.lastGameIndex
+
+    // Fifth Time GAME PDA Check
+    let [gamePda_P5] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        Buffer.from(last_game_index_for_P5.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P5: ${gamePda_P5.toBase58()}, last_game_index_for_P5: ${last_game_index_for_P5}`)
+
+
+    const tx_P5 = await CodetestProgram.methods.removePlayer().accounts({
+      // gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: gamePda_P5,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player5.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
+
+    // After Player 5 is removed check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P5_Result = await CodetestProgram.account.game.fetch(gamePda_P5);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
+
+    // Printing Balance of Global Treasury PDA // this should have reduced the global treasury pda balance
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("addPlayer method: For Re Adding player 5", async () => {
+
+    /*
+  
+    // Adding player 5
+  
+    */
+
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    let gameTypeResult_for_P5 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P5", gameTypeResult_for_P5);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P5.lastGameIndex", gameTypeResult_for_P5.lastGameIndex);
+
+    let last_game_index_for_P5 = gameTypeResult_for_P5.lastGameIndex
+
+    // Fifth Time GAME PDA Check
+    let [gamePda_P5] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        Buffer.from(last_game_index_for_P5.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P5: ${gamePda_P5.toBase58()}, last_game_index_for_P5: ${last_game_index_for_P5}`)
+
+
+    const tx_P5 = await CodetestProgram.methods.addPlayer().accounts({
+      gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: gamePda_P5,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player5.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
+
+    // After Player 5 is added check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P5_Result = await CodetestProgram.account.game.fetch(gamePda_P5);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
+
+    // Printing Balance of Global Treasury PDA
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("addPlayer method: For Adding player 6", async () => {
+
+    /*
+  
+    // Adding player 6
+  
+    */
+
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.lastGameIndex", gameTypeResult_for_P6.lastGameIndex);
+
+    let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex
+
+    // Fifth Time GAME PDA Check
+    let [gamePda_P6] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        Buffer.from(last_game_index_for_P6.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P6: ${gamePda_P6.toBase58()}, last_game_index_for_P6: ${last_game_index_for_P6}`)
+
+
+    const tx_P6 = await CodetestProgram.methods.addPlayer().accounts({
+      gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: gamePda_P6,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player6.publicKey,
+      solemInc: solemInc,
+      authority: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([player6]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
+
+    // After Player 6 is added check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P6_Result = await CodetestProgram.account.game.fetch(gamePda_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P6_Result", gamePda_P6_Result);
+
+    // Printing Balance of Global Treasury PDA
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("removePlayer method: For Removing player 6", async () => {
+
+    /*
+  
+    // Removing recently added player 6
+  
+    */
+
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.lastGameIndex", gameTypeResult_for_P6.lastGameIndex);
+
+    let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex
+
+    // Fifth Time GAME PDA Check
+    let [gamePda_P6] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        Buffer.from(last_game_index_for_P6.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P6: ${gamePda_P6.toBase58()}, last_game_index_for_P6: ${last_game_index_for_P6}`)
+
+
+    const tx_P6 = await CodetestProgram.methods.removePlayer().accounts({
+      // gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: gamePda_P6,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player6.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([player6]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
+
+    // After Player 6 is removed check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P6_Result = await CodetestProgram.account.game.fetch(gamePda_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P6_Result", gamePda_P6_Result);
+
+    // Printing Balance of Global Treasury PDA // this should have reduced the global treasury pda balance
     let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
     console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
 

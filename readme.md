@@ -1,4 +1,9 @@
-### How to run 
+### How to run Way 01
+
+anchor test
+
+### How to run Way 02:
+
 - copy and rename `.env.example` to `.env` and change `ANCHOR_WALLET` address
 - copy and rename `Anchor.toml.example` to `Anchor.toml` and change provider.wallet address
 - open 3 split terminals, parallely

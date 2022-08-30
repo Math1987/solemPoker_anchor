@@ -118,3 +118,23 @@ Save this seed phrase and your BIP39 passphrase to recover your new keypair:
 expose fix ticket item core token omit soon deer head powder assume
 ===================================================================
 ```
+
+```
+imentus@imentus:~/Documents/im-projects/game-2/game/privatekeys$ solana-keygen new -o player6.json
+Generating a new keypair
+
+For added security, enter a BIP39 passphrase
+
+NOTE! This passphrase improves security of the recovery seed phrase NOT the
+keypair file itself, which is stored as insecure plain text
+
+BIP39 Passphrase (empty for none): 
+
+Wrote new keypair to player6.json
+==========================================================================
+pubkey: 6gqFEjzAB29KDf3eks4uc2KEV82pzUsvfXV61xFL6HNN
+==========================================================================
+Save this seed phrase and your BIP39 passphrase to recover your new keypair:
+exit clerk pumpkin bind pilot force call gorilla fold drill couch question
+==========================================================================
+```
