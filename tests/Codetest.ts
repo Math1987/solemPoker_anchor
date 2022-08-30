@@ -590,57 +590,57 @@ describe("Codetest", async () => {
 
   });
 
-  // it("removePlayer method: For Removing player 6 - This should not remove the last player", async () => {
+  it("removePlayer method: For Removing player 6 - This should not remove the last player", async () => {
 
-  //   /*
+    /*
   
-  //   // Removing recently added player 6
+    // Removing recently added player 6
   
-  //   */
+    */
 
-  //   // lastGameIndex isnt updated yet
-  //   // if full = true, lastGameIndex will be updated
-  //   // Here in this case: lastGameIndex is updated and hence this will not find the PDA initialized with latest  gameTypeResult_for_P6.lastGameIndex
-  //   // Here we can proceed for custom errors using require
-  //   let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
-  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
-  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.lastGameIndex", gameTypeResult_for_P6.lastGameIndex);
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    // Here in this case: lastGameIndex is updated and hence this will not find the PDA initialized with latest  gameTypeResult_for_P6.lastGameIndex
+    // Here we can proceed for custom errors using require
+    let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.lastGameIndex", gameTypeResult_for_P6.lastGameIndex); // after adding player6 it will update the lastGameIndex by +1
 
-  //   let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex
+    let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex-1 // we are doing this here so that it fetches the correct 6th player's GamePDA
 
-  //   // Sixth Time GAME PDA Check
-  //   let [gamePda_P6] = await anchor.web3.PublicKey.findProgramAddress(
-  //     [
-  //       Buffer.from("GAME"),
-  //       Buffer.from(last_game_index_for_P6.toString()) // // string is working
-  //     ],
-  //     CodetestProgram.programId
-  //   );
-  //   console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P6: ${gamePda_P6.toBase58()}, last_game_index_for_P6: ${last_game_index_for_P6}`)
+    // Sixth Time GAME PDA Check
+    let [gamePda_P6] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        Buffer.from(last_game_index_for_P6.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 346 ~ main ~ gamePda_P6: ${gamePda_P6.toBase58()}, last_game_index_for_P6: ${last_game_index_for_P6}`)
 
 
-  //   const tx_P6 = await CodetestProgram.methods.removePlayer().accounts({
-  //     // gameList: gameList.publicKey,
-  //     gameType: gameType.publicKey,
-  //     gamePda: gamePda_P6,
-  //     globalTreasuryPda: globalTreasuryPda,
-  //     player: player6.publicKey,
-  //     systemProgram: SystemProgram.programId
-  //   }).signers([player6]).preInstructions([additionalComputeBudgetInstruction]).rpc();
-  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
+    const tx_P6 = await CodetestProgram.methods.removePlayer().accounts({
+      // gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: gamePda_P6,
+      globalTreasuryPda: globalTreasuryPda,
+      player: player6.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([player6]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
 
-  //   // After Player 6 is removed check
-  //   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
-  //   let gamePda_P6_Result = await CodetestProgram.account.game.fetch(gamePda_P6);
-  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P6_Result", gamePda_P6_Result);
+    // After Player 6 is removed check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P6_Result = await CodetestProgram.account.game.fetch(gamePda_P6);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P6_Result", gamePda_P6_Result);
 
-  //   // Printing Balance of Global Treasury PDA // this should have reduced the global treasury pda balance
-  //   let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
-  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+    // Printing Balance of Global Treasury PDA // this should have reduced the global treasury pda balance
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
 
-  // });
+  });
 
-  it("endGame method: For Game 2 with Player 6 as winner", async () => {
+  it("endGame method: For Game 2 with Player 1 as winner - This will not update winner", async () => {
 
     /*
   
@@ -665,7 +665,55 @@ describe("Codetest", async () => {
       gameType: gameType.publicKey,
       gamePda: random_full_game_pda_available_to_set_winner,
       globalTreasuryPda: globalTreasuryPda,
-      winner: player6.publicKey,
+      winner: player1.publicKey, // player 1 which isn't available in GamePDA2 // This will not update winner
+      authority: provider.wallet.publicKey,
+      systemProgram: SystemProgram.programId
+    }).signers([]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
+
+    // After Player 6 is set as winner in gameTypeResult_for_P6.activeGamesInOneType[1];
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let random_full_game_pda_available_to_set_winner_Result = await CodetestProgram.account.game.fetch(random_full_game_pda_available_to_set_winner);
+    console.log("🚀 ~ file: Codetest.ts ~ line 674 ~ it ~ random_full_game_pda_available_to_set_winner_Result", random_full_game_pda_available_to_set_winner_Result);
+
+    // checking available active games once winner is declared
+    let gameTypeResult_for_P6_post_winner_declaration = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6_post_winner_declaration", gameTypeResult_for_P6_post_winner_declaration);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6_post_winner_declaration.activeGamesInOneType", gameTypeResult_for_P6_post_winner_declaration.activeGamesInOneType);
+
+
+    // Printing Balance of Global Treasury PDA
+    let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("endGame method: For Game 2 with Player 6 as winner - This should update winner", async () => {
+
+    /*
+  
+    // Ending Game
+  
+    */
+
+    // lastGameIndex isnt updated yet
+    // if full = true, lastGameIndex will be updated
+    let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
+    // pre-winner declaration
+    gameTypeResult_for_P6.activeGamesInOneType.forEach((pubkey)=>{
+      console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.activeGamesInOneType pre-winner declaration", pubkey.toBase58());
+    })
+
+    let random_full_game_pda_available_to_set_winner = gameTypeResult_for_P6.activeGamesInOneType[1]; // checked in second pda that consists of 4-6 players
+    console.log("🚀 ~ file: Codetest.ts ~ line 658 ~ it ~ random_full_game_pda_available_to_set_winner", random_full_game_pda_available_to_set_winner.toBase58());
+
+    const tx_P6 = await CodetestProgram.methods.endGame().accounts({
+      // gameList: gameList.publicKey,
+      gameType: gameType.publicKey,
+      gamePda: random_full_game_pda_available_to_set_winner,
+      globalTreasuryPda: globalTreasuryPda,
+      winner: player6.publicKey, // here we are sending the right player which is available in GamePDA2
       authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([]).preInstructions([additionalComputeBudgetInstruction]).rpc();

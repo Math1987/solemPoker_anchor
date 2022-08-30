@@ -432,65 +432,77 @@ pub mod codetest {
         // let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
         let game = &mut ctx.accounts.game_pda; // PDA account
+                                               // game.winner = ctx.accounts.winner.key();
+        let list_of_players_available_in_game = &mut game.players;
+        let mut flag_to_declare_winner = false; // initially we say that the player to remove isn't available in list
 
-        game.winner = ctx.accounts.winner.key();
-
-        let reward_amount = gametype.entry_price * (game.rm as u64);
-
-        // // below account is not required; as the funds are available in global treasury account
-        // let (game_pda, game_seed) = Pubkey::find_program_address(&[&game.key().to_bytes()], ctx.program_id );
-
-        // Instead here we'll derive global_treasury_account
-        let globaltreasury = &mut ctx.accounts.global_treasury_pda; // PDA account
-        let (global_treasury_pda, global_treasury_pda_bump_seed) =
-            Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id);
-
-        invoke_signed(
-            &system_instruction::transfer(
-                &global_treasury_pda,
-                &ctx.accounts.winner.key(),
-                reward_amount,
-            ),
-            &[
-                globaltreasury.to_account_info(),
-                ctx.accounts.winner.to_account_info(),
-                ctx.accounts.system_program.to_account_info(),
-            ],
-            &[&[
-                // game.key().to_bytes().as_ref(),
-                // &[game_seed],
-
-                // In case of GamePDA
-                // "GAME".as_ref(),
-                // // gametype.last_game_index_to_string.as_ref(), // this is already updated; and hence we need to take the existing value
-                // gametype_previous_last_game_index_string.as_ref(), // this is already updated; and hence we need to take the existing value
-                // &[game_seed],
-
-                // In case of GlobalTreasuryPDA
-                "GlobalTreasury".as_ref(), // TREASURY_PDA_SEED.as_ref(),
-                &[global_treasury_pda_bump_seed],
-            ]],
-        )?;
-
-        // // game remove mechanism from running active games list which is stored in gametype.active_games_in_one_type
-        // mutable type
-        let list_of_active_games_available_in_gametype = &mut gametype.active_games_in_one_type;
-
-        let index_at_which_game_found = list_of_active_games_available_in_gametype
+        if list_of_players_available_in_game
             .iter()
-            .position(|x| *x == game.key())
-            .unwrap();
+            .any(|&i| i == ctx.accounts.winner.key())
+        {
+            flag_to_declare_winner = true; // he we check and set true
+        };
 
-        list_of_active_games_available_in_gametype.remove(index_at_which_game_found); //updated list of active games on endgame endpoint
+        if flag_to_declare_winner {
+            game.winner = ctx.accounts.winner.key();
 
-        // gametype.active_games_in_one_type.pop(game.key());
+            let reward_amount = gametype.entry_price * (game.rm as u64);
 
-        msg!(
+            // // below account is not required; as the funds are available in global treasury account
+            // let (game_pda, game_seed) = Pubkey::find_program_address(&[&game.key().to_bytes()], ctx.program_id );
+
+            // Instead here we'll derive global_treasury_account
+            let globaltreasury = &mut ctx.accounts.global_treasury_pda; // PDA account
+            let (global_treasury_pda, global_treasury_pda_bump_seed) =
+                Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id);
+
+            invoke_signed(
+                &system_instruction::transfer(
+                    &global_treasury_pda,
+                    &ctx.accounts.winner.key(),
+                    reward_amount,
+                ),
+                &[
+                    globaltreasury.to_account_info(),
+                    ctx.accounts.winner.to_account_info(),
+                    ctx.accounts.system_program.to_account_info(),
+                ],
+                &[&[
+                    // game.key().to_bytes().as_ref(),
+                    // &[game_seed],
+
+                    // In case of GamePDA
+                    // "GAME".as_ref(),
+                    // // gametype.last_game_index_to_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                    // gametype_previous_last_game_index_string.as_ref(), // this is already updated; and hence we need to take the existing value
+                    // &[game_seed],
+
+                    // In case of GlobalTreasuryPDA
+                    "GlobalTreasury".as_ref(), // TREASURY_PDA_SEED.as_ref(),
+                    &[global_treasury_pda_bump_seed],
+                ]],
+            )?;
+
+            // // game remove mechanism from running active games list which is stored in gametype.active_games_in_one_type
+            // mutable type
+            let list_of_active_games_available_in_gametype = &mut gametype.active_games_in_one_type;
+
+            let index_at_which_game_found = list_of_active_games_available_in_gametype
+                .iter()
+                .position(|x| *x == game.key())
+                .unwrap();
+
+            list_of_active_games_available_in_gametype.remove(index_at_which_game_found); //updated list of active games on endgame endpoint
+
+            // gametype.active_games_in_one_type.pop(game.key());
+
+            msg!(
             "Line 477: The game {} is over. Winner is {} and has been credited of {} lamports, Also game is removed from active games available",
             game.key(),
             &ctx.accounts.winner.key(),
             reward_amount
         );
+        }
 
         Ok(())
     }
@@ -561,29 +573,29 @@ pub struct AddPlayer<'info> {
 
 #[derive(Accounts)]
 pub struct RemovePlayer<'info> {
-    
     // //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
     // #[account(mut)]
     // pub game_list: Account<'info, GameList>,
-    
+
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
     #[account(mut)]
     pub game_type: Account<'info, GameType>,
-    
-    #[account(mut,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+
+    // #[account(mut,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    #[account(mut)]
+    // the seed check constraints are removed here because the game_pda derivation leads to next gamePda because of game_type.last_game_index
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
-    
+
     /// CHECK:
     #[account(mut)]
     pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
-    
+
     #[account(mut)]
     pub player: Signer<'info>,
-    
+
     // #[account(mut)]
     // pub authority: Signer<'info>,
-
     pub system_program: Program<'info, System>,
 }
 
@@ -599,22 +611,22 @@ pub struct EndGame<'info> {
     pub game_type: Account<'info, GameType>,
 
     // #[account(mut,has_one=authority, seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
-    #[account(mut, has_one = authority)] // the seed check constraints are removed here because the winner would not always be available in lastgameindex + 1
+    #[account(mut, has_one = authority)]
+    // the seed check constraints are removed here because the winner would not always be available in lastgameindex + 1
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
     /// CHECK:
     #[account(mut)]
     pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
-    
+
     #[account(mut)]
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub winner: UncheckedAccount<'info>,
-    
+
     #[account(mut)]
     pub authority: Signer<'info>,
-    
-    pub system_program: Program<'info, System>,
 
+    pub system_program: Program<'info, System>,
 }
 
 #[account]
@@ -625,7 +637,8 @@ pub struct GameList {
     //pub game_type_index_to_string: String,
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
-pub struct GameTypeData {       // additional struct to store GameType's data in GameList
+pub struct GameTypeData {
+    // additional struct to store GameType's data in GameList
     pub game_type_key: Pubkey,
     pub game_type_index_of_gamelist: u8,
     pub authority: Pubkey,
@@ -643,8 +656,8 @@ pub struct GameType {
     pub max_players: u8,
     pub max_games: u8,
 
-    pub last_game_index: u8,                // GamePDA specific
-    pub last_game_index_to_string: String,  // used to pass in seed for derivation of GamePDA
+    pub last_game_index: u8,               // GamePDA specific
+    pub last_game_index_to_string: String, // used to pass in seed for derivation of GamePDA
     pub active_games_in_one_type: Vec<Pubkey>,
 }
 
