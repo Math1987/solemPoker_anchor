@@ -606,7 +606,7 @@ describe("Codetest", async () => {
     console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
     console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.lastGameIndex", gameTypeResult_for_P6.lastGameIndex); // after adding player6 it will update the lastGameIndex by +1
 
-    let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex-1 // we are doing this here so that it fetches the correct 6th player's GamePDA
+    let last_game_index_for_P6 = gameTypeResult_for_P6.lastGameIndex - 1 // we are doing this here so that it fetches the correct 6th player's GamePDA
 
     // Sixth Time GAME PDA Check
     let [gamePda_P6] = await anchor.web3.PublicKey.findProgramAddress(
@@ -640,6 +640,42 @@ describe("Codetest", async () => {
 
   });
 
+  it("Display all active games available in gamelist", async () => {
+
+    /*
+  
+    // Display all active games available in gamelist
+  
+    */
+
+    type listOfGameTypeDataSchema = {
+      gameTypeKey: PublicKey;
+      gameTypeIndexOfGamelist: Number;
+      authority: PublicKey;
+      entryPrice: anchor.BN;
+      maxPlayers: Number;
+      maxGames: Number;
+    }
+
+    type gameListSchema = {
+      listOfGameTypeData: [listOfGameTypeDataSchema];
+      gameTypeIndex: Number;
+    }
+
+    let gameListResult = await CodetestProgram.account.gameList.fetch(gameList.publicKey) as gameListSchema;
+
+    console.log("🚀 ~ file: Codetest.ts ~ line 750 ~ it ~ gameListResult", gameListResult);
+
+    gameListResult.listOfGameTypeData.forEach(async (gameTypeData_i) => {
+      let gameTypeResult = await CodetestProgram.account.gameType.fetch(gameTypeData_i.gameTypeKey);
+      console.log(`Line 768: All GamePDA's available in entryPrice: ${gameTypeResult.entryPrice}, `)
+      gameTypeResult.activeGamesInOneType.forEach((pubkey) => {
+        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any/ anchor.web3.LAMPORTS_PER_SOL} SOL`);
+      })
+    })
+
+  });
+
   it("endGame method: For Game 2 with Player 1 as winner - This will not update winner", async () => {
 
     /*
@@ -653,7 +689,7 @@ describe("Codetest", async () => {
     let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
     console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
     // pre-winner declaration
-    gameTypeResult_for_P6.activeGamesInOneType.forEach((pubkey)=>{
+    gameTypeResult_for_P6.activeGamesInOneType.forEach((pubkey) => {
       console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.activeGamesInOneType pre-winner declaration", pubkey.toBase58());
     })
 
@@ -701,7 +737,7 @@ describe("Codetest", async () => {
     let gameTypeResult_for_P6 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
     console.log("🚀 ~ file: client_invoker.mjs ~ line 281 ~ main ~ gameTypeResult_for_P6", gameTypeResult_for_P6);
     // pre-winner declaration
-    gameTypeResult_for_P6.activeGamesInOneType.forEach((pubkey)=>{
+    gameTypeResult_for_P6.activeGamesInOneType.forEach((pubkey) => {
       console.log("🚀 ~ file: client_invoker.mjs ~ line 283 ~ main ~ gameTypeResult_for_P6.activeGamesInOneType pre-winner declaration", pubkey.toBase58());
     })
 
@@ -733,6 +769,42 @@ describe("Codetest", async () => {
     // Printing Balance of Global Treasury PDA
     let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)
     console.log("🚀 ~ file: client_invoker.mjs ~ line 358 ~ main ~ global_treasury_bal", global_treasury_bal / anchor.web3.LAMPORTS_PER_SOL);
+
+  });
+
+  it("Display all active games available in gamelist", async () => {
+
+    /*
+  
+    // Display all active games available in gamelist
+  
+    */
+
+    type listOfGameTypeDataSchema = {
+      gameTypeKey: PublicKey;
+      gameTypeIndexOfGamelist: Number;
+      authority: PublicKey;
+      entryPrice: anchor.BN;
+      maxPlayers: Number;
+      maxGames: Number;
+    }
+
+    type gameListSchema = {
+      listOfGameTypeData: [listOfGameTypeDataSchema];
+      gameTypeIndex: Number;
+    }
+
+    let gameListResult = await CodetestProgram.account.gameList.fetch(gameList.publicKey) as gameListSchema;
+
+    console.log("🚀 ~ file: Codetest.ts ~ line 750 ~ it ~ gameListResult", gameListResult);
+
+    gameListResult.listOfGameTypeData.forEach(async (gameTypeData_i) => {
+      let gameTypeResult = await CodetestProgram.account.gameType.fetch(gameTypeData_i.gameTypeKey);
+      console.log(`Line 768: All GamePDA's available in entryPrice: ${gameTypeResult.entryPrice}, `)
+      gameTypeResult.activeGamesInOneType.forEach((pubkey) => {
+        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any/ anchor.web3.LAMPORTS_PER_SOL} SOL`);
+      })
+    })
 
   });
 
