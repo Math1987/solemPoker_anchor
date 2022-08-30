@@ -182,7 +182,7 @@ pub mod codetest {
                         // transfered player entry fee to global_treasury_pda account
                         invoke(
                             &system_instruction::transfer(
-                                &ctx.accounts.player.key,
+                                &ctx.accounts.player.key(),
                                 // &game.key(), // local var .key()
                                 &global_treasury_pda.key(), // local var .key() // transfer will direct to this double checked PDA only
                                 entryprice,
@@ -364,7 +364,7 @@ pub mod codetest {
     }
 
     pub fn remove_player(ctx: Context<RemovePlayer>) -> Result<()> {
-        let gamelist = &mut ctx.accounts.game_list; // data account
+        // let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
         let game = &mut ctx.accounts.game_pda; // PDA account
 
@@ -378,7 +378,8 @@ pub mod codetest {
 
         // If game.game_full_status == false; then only we can proceed to remove a player
         if !game.game_full_status {
-            let mut list_of_players_available_in_game = &mut game.players;
+            // mutable type
+            let list_of_players_available_in_game = &mut game.players;
             let mut flag_to_check_for_player_to_remove = false; // initially we say that the player to remove isn't available in list
 
             if list_of_players_available_in_game
@@ -399,7 +400,7 @@ pub mod codetest {
                 invoke_signed(
                     &system_instruction::transfer(
                         &global_treasury_pda.key(), // local var .key()
-                        &ctx.accounts.player.key,
+                        &ctx.accounts.player.key(),
                         refund_amount,
                     ),
                     &[
@@ -428,15 +429,11 @@ pub mod codetest {
     }
 
     pub fn end_game(ctx: Context<EndGame>) -> Result<()> {
-        let gamelist = &mut ctx.accounts.game_list; // data account
+        // let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
         let game = &mut ctx.accounts.game_pda; // PDA account
 
         game.winner = ctx.accounts.winner.key();
-
-        // // removing mechanism for running games list
-        // let position = gamelist.games.iter().position(|x| *x == game.key()).expect("not found");
-        // gamelist.games.remove(position);
 
         let reward_amount = gametype.entry_price * (game.rm as u64);
 
@@ -455,7 +452,7 @@ pub mod codetest {
                 reward_amount,
             ),
             &[
-                ctx.accounts.global_treasury_pda.to_account_info(),
+                globaltreasury.to_account_info(),
                 ctx.accounts.winner.to_account_info(),
                 ctx.accounts.system_program.to_account_info(),
             ],
@@ -475,7 +472,9 @@ pub mod codetest {
             ]],
         )?;
 
-        let mut list_of_active_games_available_in_gametype = &mut gametype.active_games_in_one_type;
+        // // game remove mechanism from running active games list which is stored in gametype.active_games_in_one_type
+        // mutable type
+        let list_of_active_games_available_in_gametype = &mut gametype.active_games_in_one_type;
 
         let index_at_which_game_found = list_of_active_games_available_in_gametype
             .iter()
@@ -564,25 +563,26 @@ pub struct AddPlayer<'info> {
 
 #[derive(Accounts)]
 pub struct RemovePlayer<'info> {
-    #[account(mut)]
-    pub player: Signer<'info>,
-
-    //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    #[account(mut)]
-    pub game_list: Account<'info, GameList>,
-
+    
+    // //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    // #[account(mut)]
+    // pub game_list: Account<'info, GameList>,
+    
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
     #[account(mut)]
     pub game_type: Account<'info, GameType>,
-
+    
     #[account(mut,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
-
+    
     /// CHECK:
     #[account(mut)]
     pub global_treasury_pda: AccountInfo<'info>, // since we want to use .lamports() method
-
+    
+    #[account(mut)]
+    pub player: Signer<'info>,
+    
     // #[account(mut)]
     // pub authority: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -590,9 +590,9 @@ pub struct RemovePlayer<'info> {
 
 #[derive(Accounts)]
 pub struct EndGame<'info> {
-    //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    #[account(mut)]
-    pub game_list: Account<'info, GameList>,
+    // //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
+    // #[account(mut)]
+    // pub game_list: Account<'info, GameList>,
 
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
@@ -623,18 +623,18 @@ pub struct EndGame<'info> {
 #[account]
 #[derive(Default)]
 pub struct GameList {
-    pub list_of_game_type_data: Vec<GameTypeData>,
+    pub list_of_game_type_data: Vec<GameTypeData>, // this stores all gametype accounts data
     pub game_type_index: u8,
     //pub game_type_index_to_string: String,
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
-pub struct GameTypeData {
-    pub game_type_index_of_gamelist: u8,
+pub struct GameTypeData {       // additional struct to store GameType's data in GameList
     pub game_type_key: Pubkey,
+    pub game_type_index_of_gamelist: u8,
     pub authority: Pubkey,
     pub entry_price: u64,
-    pub max_games: u8,
     pub max_players: u8,
+    pub max_games: u8,
 }
 
 #[account]
@@ -645,8 +645,9 @@ pub struct GameType {
     pub entry_price: u64,
     pub max_players: u8,
     pub max_games: u8,
-    pub last_game_index: u8,
-    pub last_game_index_to_string: String,
+
+    pub last_game_index: u8,                // GamePDA specific
+    pub last_game_index_to_string: String,  // used to pass in seed for derivation of GamePDA
     pub active_games_in_one_type: Vec<Pubkey>,
 }
 
