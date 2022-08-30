@@ -670,7 +670,7 @@ describe("Codetest", async () => {
       let gameTypeResult = await CodetestProgram.account.gameType.fetch(gameTypeData_i.gameTypeKey);
       console.log(`Line 768: All GamePDA's available in entryPrice: ${gameTypeResult.entryPrice}, `)
       gameTypeResult.activeGamesInOneType.forEach((pubkey) => {
-        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any/ anchor.web3.LAMPORTS_PER_SOL} SOL`);
+        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any / anchor.web3.LAMPORTS_PER_SOL} SOL`);
       })
     })
 
@@ -802,9 +802,79 @@ describe("Codetest", async () => {
       let gameTypeResult = await CodetestProgram.account.gameType.fetch(gameTypeData_i.gameTypeKey);
       console.log(`Line 768: All GamePDA's available in entryPrice: ${gameTypeResult.entryPrice}, `)
       gameTypeResult.activeGamesInOneType.forEach((pubkey) => {
-        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any/ anchor.web3.LAMPORTS_PER_SOL} SOL`);
+        console.log(`🚀 ~ file: client_invoker.mjs ~ line 753 ~ main ~ gameTypeResult.activeGamesInOneType: ${pubkey.toBase58()} entryPrice: ${gameTypeResult.entryPrice as any / anchor.web3.LAMPORTS_PER_SOL} SOL`);
       })
     })
+
+  });
+
+  it("Emit/Listen the method invoked - Adding a Player", async () => {
+
+    /*
+  
+    // Emit/Listen the method invoked
+  
+    */
+
+    /*
+
+  // Adding player 1
+
+  */
+
+    // Fetching Data from gameType data account => pub struct GameList == CodetestProgram.account.gameList
+    let gameTypeResult_for_P1 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 106 ~ main ~ gameTypeResult_for_P1", gameTypeResult_for_P1);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 162 ~ main ~ gameTypeResult_for_P1.lastGameIndex", gameTypeResult_for_P1.lastGameIndex);
+
+    let last_game_index_for_P1 = gameTypeResult_for_P1.lastGameIndex // this is required to chnage gamePda
+
+
+    // First Time GAME PDA Check
+    let [gamePda_P1] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        Buffer.from("GAME"),
+        // new Uint8Array(last_game_index) // // numeric type check - It's not working here
+        Buffer.from(last_game_index_for_P1.toString()) // // string is working
+      ],
+      CodetestProgram.programId
+    );
+    console.log(`🚀 ~ file: client_invoker.mjs ~ line 191 ~ main ~ gamePda_P1: ${gamePda_P1.toBase58()}, last_game_index_for_P1: ${last_game_index_for_P1}`)
+
+
+    // listener code
+    let listener = null;
+
+    let [event, slot] = await new Promise(async (resolve, _reject) => {
+      listener = CodetestProgram.addEventListener("AddPlayerEvent", (event, slot) => {
+        resolve([event, slot]);
+      });
+      // CodetestProgram.rpc.initialize();
+      const tx_P1 = await CodetestProgram.methods.addPlayer().accounts({
+        gameList: gameList.publicKey,
+        gameType: gameType.publicKey,
+        gamePda: gamePda_P1,
+        globalTreasuryPda: globalTreasuryPda,
+        player: player1.publicKey,
+        solemInc: solemInc,
+        authority: provider.wallet.publicKey,
+        systemProgram: SystemProgram.programId
+      }).signers([player1]).preInstructions([additionalComputeBudgetInstruction]).rpc();
+      console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
+    });
+
+    console.log("🚀 ~ file: Codetest.ts ~ line 867 ~ it ~ event.label", event.label);
+
+    await CodetestProgram.removeEventListener(listener);
+
+    expect(slot).to.be.above(0);
+    expect(event.label).to.equal("AddPlayer Method Invoked");
+
+    // After Player 1 is added check
+    // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
+    let gamePda_P1_Result = await CodetestProgram.account.game.fetch(gamePda_P1);
+    console.log("🚀 ~ file: client_invoker.mjs ~ line 210 ~ main ~ P1 gamePda_P1_Result after update: ", gamePda_P1_Result);
+
 
   });
 

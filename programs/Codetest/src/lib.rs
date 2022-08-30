@@ -360,6 +360,10 @@ pub mod codetest {
                 }
             }
         }
+        emit!(AddPlayerEvent {
+            label: "AddPlayer Method Invoked".to_string(),
+        });
+
         Ok(())
     }
 
@@ -670,4 +674,10 @@ pub struct Game {
     pub winner: Pubkey,
     pub rm: u8,
     pub game_full_status: bool, // flag for checking if the game room is full or not
+}
+
+#[event]
+pub struct AddPlayerEvent {
+    #[index]
+    pub label: String,
 }
