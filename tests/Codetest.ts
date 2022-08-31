@@ -50,6 +50,7 @@ describe("Codetest", async () => {
   anchor.setProvider(provider);
 
   const CodetestProgram = anchor.workspace.Codetest as Program<Codetest>;
+  
   console.log("🚀 ~ file: client_invoker.mjs ~ line 17 ~ main ~ CodetestProgram programId", CodetestProgram.programId.toBase58());
   console.log("🚀 ~ file: client_invoker.mjs ~ line 17 ~ main ~ CodetestProgram rpc", CodetestProgram.rpc);
 
@@ -345,6 +346,11 @@ describe("Codetest", async () => {
     let gamePda_P3_Result = await CodetestProgram.account.game.fetch(gamePda_P3);
     console.log("🚀 ~ file: client_invoker.mjs ~ line 241 ~ main ~ gamePda_P3_Result", gamePda_P3_Result);
 
+    // After Player 3 is added, checking gameTypeAccount.activeGamesInOneType
+    let gameTypeResult_for_check = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+    console.log("🚀 ~ file: Codetest.ts ~ line 351 ~ it ~ gameTypeResult_for_check", gameTypeResult_for_check);
+    console.log("🚀 ~ file: Codetest.ts ~ line 352 ~ it ~ gameTypeResult_for_check", gameTypeResult_for_check.activeGamesInOneType);
+    console.log("🚀 ~ file: Codetest.ts ~ line 353 ~ it ~ gameTypeResult_for_check", gameTypeResult_for_check.activeGamesInOneType[0].toBase58());
   });
 
   it("addPlayer method: For Adding player 4", async () => {
@@ -849,7 +855,9 @@ describe("Codetest", async () => {
       listener = CodetestProgram.addEventListener("AddPlayerEvent", (event, slot) => {
         resolve([event, slot]);
       });
-      // CodetestProgram.rpc.initialize();
+      
+      // CodetestProgram.on // in rust client .on method is available
+      // CodetestProgram.rpc.initialize(); // changed to .methods as per newer version
       const tx_P1 = await CodetestProgram.methods.addPlayer().accounts({
         gameList: gameList.publicKey,
         gameType: gameType.publicKey,
