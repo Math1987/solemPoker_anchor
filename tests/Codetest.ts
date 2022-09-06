@@ -459,7 +459,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player1.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player1]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
@@ -510,7 +510,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player2.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player2]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 200 ~ consttx_P2=awaitCodetestProgram.methods.addPlayer ~ tx_P2", tx_P2);
@@ -562,7 +562,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player3.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player3]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 236 ~ consttx_P3=awaitCodetestProgram.methods.addPlayer ~ tx_P3", tx_P3);
@@ -613,7 +613,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player4.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player4]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 272 ~ consttx_P4=awaitCodetestProgram.methods.addPlayer ~ tx_P4", tx_P4);
@@ -665,7 +665,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player5.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
@@ -775,7 +775,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player5.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player5]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P5=awaitCodetestProgram.methods.addPlayer ~ tx_P5", tx_P5);
@@ -831,7 +831,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player6.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([player6]).preInstructions([additionalComputeBudgetInstruction]).rpc();
     console.log("🚀 ~ file: client_invoker.mjs ~ line 307 ~ consttx_P6=awaitCodetestProgram.methods.addPlayer ~ tx_P6", tx_P6);
@@ -1129,7 +1129,7 @@ describe("Codetest", async () => {
         globalTreasuryPda: globalTreasuryPda,
         player: player1.publicKey,
         solemInc: solemInc,
-        authority: provider.wallet.publicKey,
+        // authority: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId
       }).signers([player1]).preInstructions([additionalComputeBudgetInstruction]).rpc();
       console.log("🚀 ~ file: client_invoker.mjs ~ line 161 ~ tx ~ tx_P1", tx_P1)
@@ -1272,7 +1272,7 @@ describe("Codetest", async () => {
       globalTreasuryPda: globalTreasuryPda,
       player: player1.publicKey,
       solemInc: solemInc,
-      authority: provider.wallet.publicKey,
+      // authority: provider.wallet.publicKey,
       systemProgram: SystemProgram.programId
     }).signers([]).preInstructions([additionalComputeBudgetInstruction]).rpc() // signer is missing; tx should be rejected
     ).to.be.rejectedWith(Error, 'Signature verification failed' )

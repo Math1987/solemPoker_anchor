@@ -39,6 +39,7 @@ pub mod codetest {
                                       // this same reference will also be stored in gametype account under game_type_index_of_gamelist
 
         gamelist.list_of_game_type_data = Vec::new();
+        gamelist.authority = ctx.accounts.server.key();
 
         Ok(())
     }
@@ -54,7 +55,9 @@ pub mod codetest {
 
         let gamelist = &mut ctx.accounts.game_list;
         let gametype = &mut ctx.accounts.game_type;
+
         let authority = ctx.accounts.authority.key();
+        // let authority = gamelist.authority; // not required
 
         // // // Transaction simulation failed: Transaction leaves an "account" with a lower balance than rent-exempt minimum
         // // // $ solana rent 0 -um
@@ -124,7 +127,8 @@ pub mod codetest {
         let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
         let game = &mut ctx.accounts.game_pda; // PDA account
-        game.authority = ctx.accounts.authority.key();
+                                               // game.authority = ctx.accounts.authority.key();
+        game.authority = gamelist.authority;
         let globaltreasury = &mut ctx.accounts.global_treasury_pda; // PDA account
 
         let (global_treasury_pda, global_treasury_pda_bump_seed) =
@@ -617,7 +621,7 @@ pub struct InitGamelistAccount<'info> {
 #[derive(Accounts)]
 pub struct CreateGameType<'info> {
     //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,constraint=game_list.authority==authority.key())]
     pub game_list: Account<'info, GameList>,
 
     // #[account(init, payer = authority, space = 9000,seeds = [b"GAME_TYPE".as_ref(),&[game_list_pda.game_type_index]],bump)]
@@ -635,16 +639,17 @@ pub struct CreateGameType<'info> {
 #[derive(Accounts)]
 pub struct AddPlayer<'info> {
     //#[account(mut,seeds = [b"GAME_LIST".as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,constraint=game_list.authority==game_type.authority)]
     pub game_list: Account<'info, GameList>,
 
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,constraint=game_list.authority==game_type.authority)]
     pub game_type: Account<'info, GameType>,
 
     // #[account(init,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)] // will break the code //  'Allocate: account Address { address: 6RM3NZ7BA1R1zw9ZvxyCyJvh3jgSmkLXJBfxN1XLJEfN, base: None } already in use'
-    #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.key().as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    // #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.key().as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    #[account(init_if_needed,payer = player, space = 10000,seeds = [b"GAME".as_ref(),game_type.key().as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]  // fee payer player instead
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
     /// CHECK:
@@ -658,8 +663,9 @@ pub struct AddPlayer<'info> {
     #[account(mut)]
     pub solem_inc: AccountInfo<'info>,
 
-    #[account(mut)]
-    pub authority: Signer<'info>,
+    // no more required
+    // #[account(mut)]
+    // pub authority: Signer<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -672,11 +678,11 @@ pub struct RemovePlayer<'info> {
 
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,constraint=game_pda.authority==game_type.authority)]
     pub game_type: Account<'info, GameType>,
 
     // #[account(mut,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,constraint=game_pda.authority==game_type.authority)]
     // the seed check constraints are removed here because the game_pda derivation leads to next gamePda because of game_type.last_game_index
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
@@ -700,11 +706,11 @@ pub struct EndGame<'info> {
 
     // #[account(mut,seeds = [b"GAME_TYPE".as_ref(),&[data.select_id]],bump)]
     //#[account(mut,seeds = [b"GAME_TYPE".as_ref(),data.select_id_string.as_ref()],bump)]
-    #[account(mut)]
+    #[account(mut,has_one=authority)]
     pub game_type: Account<'info, GameType>,
 
     // #[account(mut,has_one=authority, seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
-    #[account(mut, has_one = authority)]
+    #[account(mut,has_one=authority)]
     // the seed check constraints are removed here because the winner would not always be available in lastgameindex + 1
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
@@ -727,7 +733,8 @@ pub struct EndGame<'info> {
 pub struct GameList {
     pub list_of_game_type_data: Vec<GameTypeData>, // this stores all gametype accounts data
     pub game_type_index: u64,
-    //pub game_type_index_to_string: String,
+    pub authority: Pubkey, // added later
+                           //pub game_type_index_to_string: String,
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct GameTypeData {
