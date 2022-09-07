@@ -1,3 +1,5 @@
+// deprecated; updated all test cases;
+
 import * as anchor from '@project-serum/anchor'
 import { Connection, PublicKey, Keypair, SystemProgram, LAMPORTS_PER_SOL, ComputeBudgetProgram } from '@solana/web3.js'
 
@@ -115,13 +117,46 @@ async function main() {
     console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
   }
 
+  // // Funding GameList Account
+  // // // airdrop for localhost only
+  // if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(gameList.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
+
+  // // Funding GameType Account
+  // // // airdrop for localhost only
+  // if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(gameType.publicKey, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
+
+  // // Funding Global Treasury Account
+  // // // airdrop for localhost only
+  // if (provider.connection._rpcEndpoint == "http://localhost:8899") {
+  //   let airdrop_tx_id = await provider.connection.requestAirdrop(globalTreasuryPda, anchor.web3.LAMPORTS_PER_SOL);
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 44 ~ main ~ airdrop_tx_id", airdrop_tx_id);
+  //   let latestBlockhash = await provider.connection.getLatestBlockhash();
+  //   let confirmation_response = await provider.connection.confirmTransaction({ signature: airdrop_tx_id, ...latestBlockhash });
+  //   console.log("🚀 ~ file: client_invoker.mjs ~ line 47 ~ main ~ confirmation_response", confirmation_response);
+  // }
+
+  // Funding All GamePDA Accounts
+
   /*            AIRDROP_COMPLETE        */
   console.log("Line 92: Airdrop Complete!")
 
+  // no more used
   // create a data_account // this should be created only with the init method, and later should be saved
   // let data_account = anchor.web3.Keypair.generate();
-  let data_account = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/data_account.json").toString())))
-  console.log("🚀 ~ file: client_invoker.mjs ~ line 35 ~ main ~ data_account", data_account.publicKey.toBase58());
+  // let data_account = Keypair.fromSecretKey(new Uint8Array(JSON.parse(fs.readFileSync("./privatekeys/data_account.json").toString())))
+  // console.log("🚀 ~ file: client_invoker.mjs ~ line 35 ~ main ~ data_account", data_account.publicKey.toBase58());
 
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ provider.wallet.payer", provider.wallet.payer.publicKey.toBase58());
   console.log("🚀 ~ file: client_invoker.mjs ~ line 41 ~ main ~ typeof(provider.wallet.payer)", typeof (provider.wallet.payer));
@@ -143,7 +178,7 @@ async function main() {
   let max_players_in_game_client = 3;
   // Invoking createGameType Endpoint // required to invoke every time we create a new game type (different based on entry fee)
   transaction_id = await CodetestProgram.methods
-    .createGameType(new BN(entry_fee_client * LAMPORTS_PER_SOL), max_games_available_in_game_type, max_players_in_game_client)
+    .createGameType(new BN(entry_fee_client * LAMPORTS_PER_SOL), new BN(max_games_available_in_game_type), new BN(max_players_in_game_client))
     .accounts({
       gameList: gameList.publicKey,
       gameType: gameType.publicKey,   // data account
@@ -208,6 +243,11 @@ async function main() {
   let gamePda_P1_Result = await CodetestProgram.account.game.fetch(gamePda_P1);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 210 ~ main ~ P1 gamePda_P1_Result after update: ", gamePda_P1_Result);
 
+  // After Player 1 is added, checking gameTypeAccount.activeGamesInOneType
+  let gameTypeResult_for_check_P1 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: Codetest.ts ~ line 265 ~ it ~ gameTypeResult_for_check_P1", gameTypeResult_for_check_P1);
+  console.log("🚀 ~ file: Codetest.ts ~ line 266 ~ it ~ gameTypeResult_for_check_P1", gameTypeResult_for_check_P1.activeGamesInOneType);
+
 
   /*
 
@@ -249,6 +289,11 @@ async function main() {
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
   let gamePda_P2_Result = await CodetestProgram.account.game.fetch(gamePda_P2);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 205 ~ main ~ gamePda_P2_Result after update:", gamePda_P2_Result);
+
+  // After Player 2 is added, checking gameTypeAccount.activeGamesInOneType
+  let gameTypeResult_for_check_P2 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: Codetest.ts ~ line 315 ~ it ~ gameTypeResult_for_check_P2", gameTypeResult_for_check_P2);
+  console.log("🚀 ~ file: Codetest.ts ~ line 316 ~ it ~ gameTypeResult_for_check_P2", gameTypeResult_for_check_P2.activeGamesInOneType);
 
   /*
 
@@ -292,6 +337,11 @@ async function main() {
   let gamePda_P3_Result = await CodetestProgram.account.game.fetch(gamePda_P3);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 241 ~ main ~ gamePda_P3_Result", gamePda_P3_Result);
 
+  // After Player 3 is added, checking gameTypeAccount.activeGamesInOneType
+  let gameTypeResult_for_check_P3 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: Codetest.ts ~ line 315 ~ it ~ gameTypeResult_for_check_P3", gameTypeResult_for_check_P3);
+  console.log("🚀 ~ file: Codetest.ts ~ line 316 ~ it ~ gameTypeResult_for_check_P3", gameTypeResult_for_check_P3.activeGamesInOneType);
+
 
   /*
 
@@ -333,6 +383,11 @@ async function main() {
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
   let gamePda_P4_Result = await CodetestProgram.account.game.fetch(gamePda_P4);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 276 ~ main ~ gamePda_P4_Result", gamePda_P4_Result);
+
+  // After Player 4 is added, checking gameTypeAccount.activeGamesInOneType
+  let gameTypeResult_for_check_P4 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: Codetest.ts ~ line 351 ~ it ~ gameTypeResult_for_check_P4", gameTypeResult_for_check_P4);
+  console.log("🚀 ~ file: Codetest.ts ~ line 352 ~ it ~ gameTypeResult_for_check_P4", gameTypeResult_for_check_P4.activeGamesInOneType);
 
 
   /*
@@ -376,6 +431,11 @@ async function main() {
   // Fetching Data from gamePda account => pub struct Game == CodetestProgram.account.game
   let gamePda_P5_Result = await CodetestProgram.account.game.fetch(gamePda_P5);
   console.log("🚀 ~ file: client_invoker.mjs ~ line 312 ~ main ~ gamePda_P5_Result", gamePda_P5_Result);
+
+  // After Player 5 is added, checking gameTypeAccount.activeGamesInOneType
+  let gameTypeResult_for_check_P5 = await CodetestProgram.account.gameType.fetch(gameType.publicKey);
+  console.log("🚀 ~ file: Codetest.ts ~ line 351 ~ it ~ gameTypeResult_for_check_P5", gameTypeResult_for_check_P5);
+  console.log("🚀 ~ file: Codetest.ts ~ line 352 ~ it ~ gameTypeResult_for_check_P5", gameTypeResult_for_check_P5.activeGamesInOneType);
 
   // Printing Balance of Global Treasury PDA
   let global_treasury_bal = await provider.connection.getBalance(globalTreasuryPda)

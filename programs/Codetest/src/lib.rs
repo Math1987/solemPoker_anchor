@@ -16,11 +16,30 @@ pub mod codetest {
 
         let gamelist = &mut ctx.accounts.game_list;
 
+        // // // Transaction simulation failed: Transaction leaves an "account" with a lower balance than rent-exempt minimum
+        // // // $ solana rent 0 -um
+        // // // Rent per byte-year: 0.00000348 SOL
+        // // // Rent per epoch: 0.000002439 SOL
+        // // // Rent-exempt minimum: 0.00089088 SOL
+
+        // invoke(
+        //     &system_instruction::transfer(
+        //         &ctx.accounts.server.key(), //authority === server
+        //         &gamelist.key(),
+        //         890880,
+        //     ),
+        //     &[
+        //         ctx.accounts.server.to_account_info(),
+        //         gamelist.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        // )?;
+
         gamelist.game_type_index = 1; // setting up game_type_index in gamelist account
                                       // this same reference will also be stored in gametype account under game_type_index_of_gamelist
 
         gamelist.list_of_game_type_data = Vec::new();
-        gamelist.authority=ctx.accounts.server.key();
+        gamelist.authority = ctx.accounts.server.key();
 
         Ok(())
     }
@@ -29,15 +48,53 @@ pub mod codetest {
     pub fn create_game_type(
         ctx: Context<CreateGameType>,
         entry_price: u64,
-        max_games: u8,
-        max_players: u8,
+        max_games: u64,
+        max_players: u64,
     ) -> Result<()> {
         msg!("Line 34: Invoked create_game_type endpoint that has ctx of CreateGameType");
 
         let gamelist = &mut ctx.accounts.game_list;
         let gametype = &mut ctx.accounts.game_type;
 
-        let authority = gamelist.authority;
+        let authority = ctx.accounts.authority.key();
+        // let authority = gamelist.authority; // not required
+
+        // // // Transaction simulation failed: Transaction leaves an "account" with a lower balance than rent-exempt minimum
+        // // // $ solana rent 0 -um
+        // // // Rent per byte-year: 0.00000348 SOL
+        // // // Rent per epoch: 0.000002439 SOL
+        // // // Rent-exempt minimum: 0.00089088 SOL
+
+        // invoke(
+        //     &system_instruction::transfer(&ctx.accounts.authority.key(), &gametype.key(), 890880),
+        //     &[
+        //         ctx.accounts.authority.to_account_info(),
+        //         gametype.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        // )?;
+
+        // let (global_treasury_pda, global_treasury_pda_bump_seed) =
+        //     Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id);
+
+        // // // Transaction simulation failed: Transaction leaves an "account" with a lower balance than rent-exempt minimum
+        // // // $ solana rent 0 -um
+        // // // Rent per byte-year: 0.00000348 SOL
+        // // // Rent per epoch: 0.000002439 SOL
+        // // // Rent-exempt minimum: 0.00089088 SOL
+
+        // invoke(
+        //     &system_instruction::transfer(
+        //         &ctx.accounts.authority.key(),
+        //         &global_treasury_pda,
+        //         890880,
+        //     ),
+        //     &[
+        //         ctx.accounts.authority.to_account_info(),
+        //         global_treasury_pda.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        // )?;
 
         // setting up all data in gametype account
         gametype.last_game_index = 1; // a fresh account starts the game index with 1
@@ -67,16 +124,51 @@ pub mod codetest {
     pub fn add_player(ctx: Context<AddPlayer>) -> Result<()> {
         msg!("Line 67: Invoked add_player endpoint that has ctx of AddPlayer");
 
-        let (global_treasury_pda, global_treasury_pda_bump_seed) =
-            Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id); // this is used only for transferring commission to solemInc
-        let solem_inc_pk =
-            Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
-
         let gamelist = &mut ctx.accounts.game_list; // data account
         let gametype = &mut ctx.accounts.game_type; // data account
-        let game = &mut ctx.accounts.game_pda;
-        game.authority=gamelist.authority; // PDA account
+        let game = &mut ctx.accounts.game_pda; // PDA account
+                                               // game.authority = ctx.accounts.authority.key();
+        game.authority = gamelist.authority;
         let globaltreasury = &mut ctx.accounts.global_treasury_pda; // PDA account
+
+        let (global_treasury_pda, global_treasury_pda_bump_seed) =
+            Pubkey::find_program_address(&[b"GlobalTreasury"], ctx.program_id); // this is used only for transferring commission to solemInc
+
+        // // because tx simulation error: tx will not pass validators check; hence below airdrop is of no use
+
+        // // // Transaction simulation failed: Transaction leaves an "account" with a lower balance than rent-exempt minimum
+        // // // $ solana rent 0 -um
+        // // // Rent per byte-year: 0.00000348 SOL
+        // // // Rent per epoch: 0.000002439 SOL
+        // // // Rent-exempt minimum: 0.00089088 SOL
+
+        // // airdropping globaltreasury
+        // invoke(
+        //     &system_instruction::transfer(
+        //         &ctx.accounts.authority.key(),
+        //         &global_treasury_pda,
+        //         890880,
+        //     ),
+        //     &[
+        //         ctx.accounts.authority.to_account_info(),
+        //         globaltreasury.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        // )?;
+
+        // // because tx simulation error: tx will not pass validators check; hence below airdrop is of no use
+        // airdropping gamepda
+        // invoke(
+        //     &system_instruction::transfer(&ctx.accounts.authority.key(), &game.key(), 890880),
+        //     &[
+        //         ctx.accounts.authority.to_account_info(),
+        //         game.to_account_info(),
+        //         ctx.accounts.system_program.to_account_info(),
+        //     ],
+        // )?;
+
+        let solem_inc_pk =
+            Pubkey::from_str("C8G8fK6G6tzPeFDXArqXPJusd1vDfQAftLwBNu3qmaRb").unwrap();
 
         msg!(
             "Line 64 ~ pub fn add_player ~ gamelist account: {} ",
@@ -556,7 +648,8 @@ pub struct AddPlayer<'info> {
     pub game_type: Account<'info, GameType>,
 
     // #[account(init,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)] // will break the code //  'Allocate: account Address { address: 6RM3NZ7BA1R1zw9ZvxyCyJvh3jgSmkLXJBfxN1XLJEfN, base: None } already in use'
-    #[account(init_if_needed,payer = player, space = 10000,seeds = [b"GAME".as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    // #[account(init_if_needed,payer = authority, space = 10000,seeds = [b"GAME".as_ref(),game_type.key().as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]
+    #[account(init_if_needed,payer = player, space = 10000,seeds = [b"GAME".as_ref(),game_type.key().as_ref(),game_type.last_game_index_to_string.as_ref()],bump)]  // fee payer player instead
     pub game_pda: Account<'info, Game>, // this isnt AccountInfo, in which we can direcly use .lamports()
 
     /// CHECK:
@@ -570,6 +663,7 @@ pub struct AddPlayer<'info> {
     #[account(mut)]
     pub solem_inc: AccountInfo<'info>,
 
+    // no more required
     // #[account(mut)]
     // pub authority: Signer<'info>,
 
@@ -638,30 +732,31 @@ pub struct EndGame<'info> {
 #[derive(Default)]
 pub struct GameList {
     pub list_of_game_type_data: Vec<GameTypeData>, // this stores all gametype accounts data
-    pub game_type_index: u8,
-    pub authority:Pubkey,
-    //pub game_type_index_to_string: String,
+    pub game_type_index: u64,
+    pub authority: Pubkey, // added later
+                           //pub game_type_index_to_string: String,
 }
 #[derive(Debug, Clone, AnchorSerialize, AnchorDeserialize)]
 pub struct GameTypeData {
     // additional struct to store GameType's data in GameList
     pub game_type_key: Pubkey,
-    pub game_type_index_of_gamelist: u8,
-    pub authority: Pubkey,
+    pub game_type_index_of_gamelist: u64, // rm
+    pub authority: Pubkey,                // rm
     pub entry_price: u64,
-    pub max_players: u8,
-    pub max_games: u8,
+    pub max_players: u64, // rm
+    pub max_games: u64,   // rm
 }
 
 #[account]
 #[derive(Default)]
 pub struct GameType {
-    pub game_type_index_of_gamelist: u8, // game_type_index_of_gamelist: the index of gametype in gamelist
+    pub game_type_index_of_gamelist: u64, // game_type_index_of_gamelist: the index of gametype in gamelist //u32
     pub authority: Pubkey,
-    pub entry_price: u64,
-    pub max_players: u8,
-    pub max_games: u8,
-    pub last_game_index: u8,               // GamePDA specific
+    pub entry_price: u64, // u16
+    pub max_players: u64, // u8
+    pub max_games: u64,   // u64
+
+    pub last_game_index: u64,              // GamePDA specific
     pub last_game_index_to_string: String, // used to pass in seed for derivation of GamePDA
     pub active_games_in_one_type: Vec<Pubkey>,
 }
@@ -673,7 +768,7 @@ pub struct Game {
     pub game_type: Pubkey,
     pub players: Vec<Pubkey>,
     pub winner: Pubkey,
-    pub rm: u8,
+    pub rm: u64,                // u8
     pub game_full_status: bool, // flag for checking if the game room is full or not
 }
 
